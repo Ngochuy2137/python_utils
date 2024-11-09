@@ -10,7 +10,8 @@ class Plotter:
     def plot_samples(self, samples, title=''):
         figure = plt.figure()
         ax = figure.add_subplot(111, projection='3d')
-        for i in range (len(samples)):
+        
+        for i in range(len(samples)):
             samp_traj = np.array(samples[i][0])
             samp_simbol = samples[i][1]
             limit = len(self.colors)
@@ -19,14 +20,15 @@ class Plotter:
             ax.plot(samp_traj[:, 0], samp_traj[:, 1], samp_traj[:, 2], 
                         samp_simbol, color=self.colors[i], alpha=0.5, label='Test '+str(i+1) + 'Sample Trajectory')
             
+            # Đặt chữ "end" tại điểm cuối của mỗi sample
+            end_point = samp_traj[-1]  # Điểm cuối cùng của sample
+            ax.text(end_point[0], end_point[1], end_point[2], 'end', color=self.colors[i], fontsize=10, ha='center')
+        
         # Set limits
-        x_min = 100000
-        x_max = -100000
-        y_min = 100000
-        y_max = -100000
-        z_min = 100000
-        z_max = -100000
-        for i in range (len(samples)):
+        x_min, x_max = 100000, -100000
+        y_min, y_max = 100000, -100000
+        z_min, z_max = 100000, -100000
+        for i in range(len(samples)):
             samp_traj = np.array(samples[i][0])
             x_min = min(x_min, samp_traj[:, 0].min())
             x_max = max(x_max, samp_traj[:, 0].max())
