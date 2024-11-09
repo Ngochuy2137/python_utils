@@ -11,19 +11,35 @@ class Plotter:
         figure = plt.figure()
         ax = figure.add_subplot(111, projection='3d')
         for i in range (len(samples)):
-            sample = np.array(samples[i])
+            samp_traj = np.array(samples[i][0])
+            samp_simbol = samples[i][1]
             limit = len(self.colors)
             if i+1 >= limit:
                 return
-            ax.plot(sample[:, 0], sample[:, 1], sample[:, 2], 
-                        self.simbol[i], color=self.colors[i], alpha=0.5, label='Test '+str(i+1) + 'Sample Trajectory')
+            ax.plot(samp_traj[:, 0], samp_traj[:, 1], samp_traj[:, 2], 
+                        samp_simbol, color=self.colors[i], alpha=0.5, label='Test '+str(i+1) + 'Sample Trajectory')
             
-            ax.set_xlim([sample[:, 0].min(), sample[:, 0].max()])
-            ax.set_ylim([sample[:, 1].min(), sample[:, 1].max()])
-            ax.set_zlim([sample[:, 2].min(), sample[:, 2].max()])
-            ax.set_xlabel('X')
-            ax.set_ylabel('Y')
-            ax.set_zlabel('Z')
+        # Set limits
+        x_min = 100000
+        x_max = -100000
+        y_min = 100000
+        y_max = -100000
+        z_min = 100000
+        z_max = -100000
+        for i in range (len(samples)):
+            samp_traj = np.array(samples[i][0])
+            x_min = min(x_min, samp_traj[:, 0].min())
+            x_max = max(x_max, samp_traj[:, 0].max())
+            y_min = min(y_min, samp_traj[:, 1].min())
+            y_max = max(y_max, samp_traj[:, 1].max())
+            z_min = min(z_min, samp_traj[:, 2].min())
+            z_max = max(z_max, samp_traj[:, 2].max())
+        ax.set_xlim([x_min, x_max])
+        ax.set_ylim([y_min, y_max])
+        ax.set_zlim([z_min, z_max])
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
 
         plt.legend()
         plt.title('3D samples ' + title, fontsize=25)
