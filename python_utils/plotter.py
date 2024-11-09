@@ -15,23 +15,18 @@ class Plotter:
         self.colors_rviz = [
             ColorRGBA(1.0, 0.0, 0.0, 1.0),  # Red
             ColorRGBA(0.0, 1.0, 0.0, 1.0),  # Green
-            ColorRGBA(0.0, 0.0, 1.0, 1.0),  # Blue
             ColorRGBA(1.0, 1.0, 0.0, 1.0),  # Yellow
             ColorRGBA(1.0, 0.0, 1.0, 1.0),  # Magenta
             ColorRGBA(0.0, 1.0, 1.0, 1.0),  # Cyan
             ColorRGBA(0.5, 0.5, 0.5, 1.0),  # Gray
             ColorRGBA(1.0, 0.5, 0.0, 1.0),  # Orange
+            ColorRGBA(0.0, 0.0, 1.0, 1.0),  # Blue
             ColorRGBA(0.5, 0.0, 1.0, 1.0),  # Purple
             ColorRGBA(0.0, 0.5, 1.0, 1.0)   # Light Blue
         ]
         self.pub = rospy.Publisher(topic_name, MarkerArray, queue_size=1)
-    
-    def reset_plot(self):
-        # reset rviz plot, publish empty marker array
-        marker_array = MarkerArray()
-        self.pub.publish(marker_array)
-        rospy.loginfo("Reset plot in RViz.")
-        
+        self.last_marker_id = 0
+
     def plot_samples(self, samples, title=''):
         figure = plt.figure()
         ax = figure.add_subplot(111, projection='3d')
@@ -129,7 +124,7 @@ class Plotter:
         plt.title('3D Predictions ' + title, fontsize=18)
         plt.show()
 
-    def plot_samples_rviz(self, segments_plot, title, frame_id='map'):
+    def plot_samples_rviz(self, segments_plot, title, frame_id='world'):
         marker_array = MarkerArray()  # Tạo một MarkerArray để chứa tất cả các marker
         marker_id = 0  # ID của marker, sẽ tăng dần để đảm bảo mỗi marker là duy nhất
         color_index = 1  # Bỏ qua màu đỏ (0) để tránh trùng màu 'o'
@@ -173,6 +168,7 @@ class Plotter:
                 marker.scale.x = 0.02
                 marker.scale.y = 0.02
                 marker.scale.z = 0.02
+                marker.pose.orientation.w = 1.0
                 object_color_index = 0
                 for point_data in segment:
                     point = Point()
@@ -220,11 +216,12 @@ class Plotter:
             end_marker.pose.position.x = segment[-1][0] + 0.05
             end_marker.pose.position.y = segment[-1][1] + 0.05
             end_marker.pose.position.z = segment[-1][2] + 0.05  # Hiển thị chữ "end" ngay trên điểm cuối
+            end_marker.pose.orientation.w = 1.0
             end_marker.scale.z = 0.05  # Kích thước chữ "end"
             end_marker.color = self.colors_rviz[object_color_index]  # Màu đỏ cho chữ "end"
             end_marker.text = "end"  # Văn bản cho điểm cuối
             marker_array.markers.append(end_marker)  # Thêm end_marker vào MarkerArray
-
+        self.last_marker_id = marker_id
         # Publish toàn bộ MarkerArray
         self.pub.publish(marker_array)
         rospy.loginfo("All segments, title, and end markers published to RViz.")
