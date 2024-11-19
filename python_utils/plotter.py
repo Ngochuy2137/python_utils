@@ -7,6 +7,7 @@ import rospy
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point
 from std_msgs.msg import ColorRGBA
+import random
 
 class Plotter:
     def __init__(self, topic_name='plotter/visualization_marker'):
@@ -28,10 +29,23 @@ class Plotter:
         self.last_marker_id = 0
 
     def plot_samples(self, samples, title=''):
+        # shuffle samples
+        random.shuffle(samples)
+
+        # check if each trajectory has 2 elements (trajectory and simbol) or not 
+        data_with_simbol = True
+        for i in range(len(samples)):
+            if len(samples[i]) != 2:
+                rospy.logwarn("Invalid sample. Skipping sample.")
+                data_with_simbol = False
+        if not data_with_simbol:
+            # add default simbol for each trajectory
+            samples = [[s, 'o'] for s in samples]
+
         figure = plt.figure()
         ax = figure.add_subplot(111, projection='3d')
-        
-        for i in range(len(samples)):
+        limit = min(len(self.colors), len(samples))
+        for i in range(limit-1):
             samp_traj = np.array(samples[i][0])
             samp_simbol = samples[i][1]
             limit = len(self.colors)
