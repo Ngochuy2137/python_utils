@@ -28,48 +28,105 @@ class Plotter:
         self.pub = rospy.Publisher(topic_name, MarkerArray, queue_size=1)
         self.last_marker_id = 0
 
-    def plot_samples(self, samples, title=''):
-        # shuffle samples
-        random.shuffle(samples)
+    # def plot_samples(self, samples_simbols_list, title=''):
+    #     # shuffle samples_simbols_list
+    #     random.shuffle(samples_simbols_list)
 
-        # check if each trajectory has 2 elements (trajectory and simbol) or not 
-        data_with_simbol = True
-        for i in range(len(samples)):
-            if len(samples[i]) != 2:
-                rospy.logwarn("Invalid sample. Skipping sample.")
-                data_with_simbol = False
-        if not data_with_simbol:
-            # add default simbol for each trajectory
-            samples = [[s, 'o'] for s in samples]
+    #     # check if each trajectory has 2 elements (trajectory and simbol) or not 
+    #     data_with_simbol = True
+    #     for i in range(len(samples_simbols_list)):
+    #         if len(samples_simbols_list[i]) != 2:
+    #             data_with_simbol = False
+    #     if not data_with_simbol:
+    #         # add default simbol for each trajectory
+    #         samples_simbols_list = [[s, 'o'] for s in samples_simbols_list]
 
-        figure = plt.figure()
-        ax = figure.add_subplot(111, projection='3d')
-        limit = min(len(self.colors), len(samples))
-        for i in range(limit-1):
-            samp_traj = np.array(samples[i][0])
-            samp_simbol = samples[i][1]
-            limit = len(self.colors)
-            if i+1 >= limit:
-                return
-            ax.plot(samp_traj[:, 0], samp_traj[:, 1], samp_traj[:, 2], 
-                        samp_simbol, color=self.colors[i], alpha=0.5, label='Test '+str(i+1) + 'Sample Trajectory')
+    #     figure = plt.figure()
+    #     ax = figure.add_subplot(111, projection='3d')
+    #     limit = min(len(self.colors), len(samples_simbols_list))
+    #     for i in range(limit-1):
+    #         samp_traj = samples_simbols_list[i][0]
+    #         samp_simbol = samples_simbols_list[i][1]
+
+    #         print('samp_traj: ', len(samp_traj))
+    #         print('samp_simbol: ', samp_simbol)
+    #         input()
+
+    #         limit = len(self.colors)
+    #         if i+1 >= limit:
+    #             return
+    #         ax.plot(samp_traj[:, 0], samp_traj[:, 1], samp_traj[:, 2], 
+    #                     samp_simbol, color=self.colors[i], alpha=0.5, label='Test '+str(i+1) + 'Sample Trajectory')
             
-            # Đặt chữ "end" tại điểm cuối của mỗi sample
-            end_point = samp_traj[-1]  # Điểm cuối cùng của sample
-            ax.text(end_point[0], end_point[1], end_point[2], 'end', color=self.colors[i], fontsize=10, ha='center')
+    #         # Đặt chữ "end" tại điểm cuối của mỗi sample
+    #         end_point = samp_traj[-1]  # Điểm cuối cùng của sample
+    #         ax.text(end_point[0], end_point[1], end_point[2], 'end', color=self.colors[i], fontsize=10, ha='center')
         
-        # Set limits
-        x_min, x_max = 100000, -100000
-        y_min, y_max = 100000, -100000
-        z_min, z_max = 100000, -100000
-        for i in range(len(samples)):
-            samp_traj = np.array(samples[i][0])
-            x_min = min(x_min, samp_traj[:, 0].min())
-            x_max = max(x_max, samp_traj[:, 0].max())
-            y_min = min(y_min, samp_traj[:, 1].min())
-            y_max = max(y_max, samp_traj[:, 1].max())
-            z_min = min(z_min, samp_traj[:, 2].min())
-            z_max = max(z_max, samp_traj[:, 2].max())
+    #     # Set limits
+    #     x_min, x_max = 100000, -100000
+    #     y_min, y_max = 100000, -100000
+    #     z_min, z_max = 100000, -100000
+    #     for samps_vs_simb in samples_simbols_list:
+    #         samps = samps_vs_simb[0]
+    #         for samp in samps:
+    #             x_min = min(x_min, samp[0])
+    #             x_max = max(x_max, samp[0])
+    #             y_min = min(y_min, samp[1])
+    #             y_max = max(y_max, samp[1])
+    #             z_min = min(z_min, samp[2])
+    #             z_max = max(z_max, samp[2])
+        
+    #     ax.set_xlim([x_min, x_max])
+    #     ax.set_ylim([y_min, y_max])
+    #     ax.set_zlim([z_min, z_max])
+    #     ax.set_xlabel('X')
+    #     ax.set_ylabel('Y')
+    #     ax.set_zlabel('Z')
+
+    #     plt.legend()
+    #     plt.title('3D samples ' + title, fontsize=25)
+    #     plt.show()
+
+    def plot_samples(self, samples, title='', rotate_data_whose_y_up=False, plot_all=False):
+        print('Plotting samples...')
+        figure = plt.figure(num=1)
+        ax = figure.add_subplot(111, projection='3d')
+
+        x_min = 1000
+        x_max = -1000
+        y_min = 1000
+        y_max = -1000
+        z_min = 1000
+        z_max = -1000
+        for i in range (len(samples)):
+            if i >= len(self.colors)-1:
+                if not plot_all:
+                    break
+                color_current = self.colors[-1]
+            else:
+                color_current = self.colors[i]
+
+            sample = np.array(samples[i])
+
+            if rotate_data_whose_y_up:
+                # change the order of the axis so that z is up and follow the right-hand rule
+                x_data = sample[:, 0]
+                y_data = -sample[:, 2]
+                z_data = sample[:, 1]
+            else:
+                x_data = sample[:, 0]
+                y_data = sample[:, 1]
+                z_data = sample[:, 2]
+
+            ax.plot(x_data, y_data, z_data, 
+                        'o', color=color_current, alpha=0.5, label='Test '+str(i+1) + 'Sample Trajectory')
+            x_min = min(x_min, x_data.min())
+            x_max = max(x_max, x_data.max())
+            y_min = min(y_min, y_data.min())
+            y_max = max(y_max, y_data.max())
+            z_min = min(z_min, z_data.min())
+            z_max = max(z_max, z_data.max())
+            
         ax.set_xlim([x_min, x_max])
         ax.set_ylim([y_min, y_max])
         ax.set_zlim([z_min, z_max])
