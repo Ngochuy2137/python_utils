@@ -87,10 +87,13 @@ class Plotter:
     #     plt.title('3D samples ' + title, fontsize=25)
     #     plt.show()
 
-    def plot_samples(self, samples, title='', rotate_data_whose_y_up=False, plot_all=False):
+    def plot_samples(self, samples, title='', rotate_data_whose_y_up=False, plot_all=False, shuffle=False):
         print('Plotting samples...')
         figure = plt.figure(num=1)
         ax = figure.add_subplot(111, projection='3d')
+
+        if shuffle:
+            random.shuffle(samples)
 
         x_min = 1000
         x_max = -1000
@@ -120,6 +123,10 @@ class Plotter:
 
             ax.plot(x_data, y_data, z_data, 
                         'o', color=color_current, alpha=0.5, label='Test '+str(i+1) + 'Sample Trajectory')
+            
+            # Add 'end' text at the last point
+            ax.text(x_data[-1], y_data[-1], z_data[-1], 'end', color=color_current, fontsize=10)
+
             x_min = min(x_min, x_data.min())
             x_max = max(x_max, x_data.max())
             y_min = min(y_min, y_data.min())
