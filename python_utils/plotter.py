@@ -242,8 +242,8 @@ class Plotter:
         fig.show()
 
         # Lưu biểu đồ thành HTML
-        plot(fig, filename="trajectory_plot.html")
-        print("Biểu đồ được lưu tại 'trajectory_plot.html'")
+        plot(fig, filename=f"{title}_trajectory_plot.html")
+        print(f"Trajectory plot was saved at {title}_trajectory_plot.html")
 
     def update_plot(self, one_trajectory_prediction, one_trajectory_label, color_idx, ax, swap_y_z=False):
         # Check if the color index is within the range
