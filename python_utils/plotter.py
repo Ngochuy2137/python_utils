@@ -8,6 +8,9 @@ from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point
 from std_msgs.msg import ColorRGBA
 import random
+from plotly.graph_objects import Figure, Scatter3d
+from plotly.offline import plot
+import os
 
 class Plotter:
     def __init__(self, topic_name='plotter/visualization_marker'):
@@ -145,6 +148,83 @@ class Plotter:
         plt.title('3D samples ' + title, fontsize=25)
         plt.show()
     
+    def plot_trajectory_dataset(self, trajectories, title='', rotate_data_whose_y_up=False):
+        fig = Figure()
+
+        # Tạo một danh sách các màu sắc
+        colors = [
+            f'rgb({random.randint(0,255)}, {random.randint(0,255)}, {random.randint(0,255)})'
+            for _ in range(len(trajectories))
+        ]
+
+        for i, traj in enumerate(trajectories):
+            # Xử lý dữ liệu nếu cần xoay trục
+            if rotate_data_whose_y_up:
+                x_data = traj[:, 0]
+                y_data = -traj[:, 2]  # Đảo chiều trục Y
+                z_data = traj[:, 1]
+            else:
+                x_data = traj[:, 0]
+                y_data = traj[:, 1]
+                z_data = traj[:, 2]
+
+            # Thêm quỹ đạo vào biểu đồ
+            fig.add_trace(Scatter3d(
+                x=x_data,
+                y=y_data,
+                z=z_data,
+                mode='lines+markers',  # Hiển thị cả đường nối và điểm
+                marker=dict(
+                    size=4,
+                    color=colors[i],  # Mỗi quỹ đạo có màu riêng
+                    opacity=0.8
+                ),
+                line=dict(
+                    color=colors[i],  # Màu của đường nối
+                    width=2
+                ),
+                name=f'Trajectory {i+1}'  # Đặt tên cho quỹ đạo
+            ))
+
+            # Thêm chữ "end" bên cạnh điểm cuối
+            fig.add_trace(Scatter3d(
+                x=[x_data[-1]],
+                y=[y_data[-1]],
+                z=[z_data[-1]],
+                mode='text',
+                text=["end"],
+                textposition="top right",
+                textfont=dict(size=10, color=colors[i]),
+                showlegend=False  # Không hiển thị trong chú giải
+            ))
+
+        # Cập nhật bố cục
+        fig.update_layout(
+            title=f'{title} - Trajectories',
+            scene=dict(
+                xaxis=dict(
+                    dtick=0.25,  # Khoảng cách giữa các mốc trên trục X là 0.25
+                    title="X Axis"
+                ),
+                yaxis=dict(
+                    dtick=0.25,  # Khoảng cách giữa các mốc trên trục Y là 0.25
+                    title="Y Axis"
+                ),
+                zaxis=dict(
+                    dtick=0.25,  # Khoảng cách giữa các mốc trên trục Z là 0.25
+                    title="Z Axis"
+                ),
+                aspectmode='data'  # Tỷ lệ dựa trên phạm vi dữ liệu
+            )
+        )
+        
+        # Hiển thị biểu đồ
+        fig.show()
+
+        # Lưu biểu đồ thành HTML
+        plot(fig, filename="trajectory_plot.html")
+        print("Biểu đồ được lưu tại 'trajectory_plot.html'")
+
     def update_plot(self, one_trajectory_prediction, one_trajectory_label, color_idx, ax, swap_y_z=False):
         # Check if the color index is within the range
         if color_idx+1 >= len(self.colors):
@@ -303,3 +383,21 @@ class Plotter:
         # Publish toàn bộ MarkerArray
         self.pub.publish(marker_array)
         rospy.loginfo("All segments, title, and end markers published to RViz.")
+
+
+def main():
+    util_plotter = Plotter()
+
+    # Test plot_trajectory_dataset
+    #   load data
+    #   get path of this script
+    this_path = os.path.dirname(os.path.abspath(__file__))
+    data_path = os.path.join(this_path, 'data/data_test_27.npy')
+
+    data = np.load(data_path, allow_pickle=True)
+    print(len(data))
+    trajectories = data[:10]
+    util_plotter.plot_trajectory_dataset(trajectories, title='Test plot_trajectory_dataset', rotate_data_whose_y_up=False)
+
+if __name__ == '__main__':
+    main()
