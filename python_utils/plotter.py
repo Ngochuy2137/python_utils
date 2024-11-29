@@ -200,23 +200,43 @@ class Plotter:
 
         # Cập nhật bố cục
         fig.update_layout(
-            title=f'{title} - Trajectories',
+            title=dict(
+                text=f"{title} - Trajectories",  # Nội dung tiêu đề
+                font=dict(size=32),  # Kích thước chữ
+                x=0.5  # Canh giữa tiêu đề
+            ),
+
+            legend=dict(
+                font=dict(size=16),  # Kích thước chữ của legend
+                title=dict(text="Legend Title", font=dict(size=18))  # Kích thước chữ tiêu đề legend
+            ),
+
             scene=dict(
                 xaxis=dict(
                     dtick=0.25,  # Khoảng cách giữa các mốc trên trục X là 0.25
-                    title="X Axis"
+                    title=dict(
+                        text="X Axis",  # Nội dung tiêu đề của trục X
+                        font=dict(size=16)  # Kích thước chữ
+                    )
                 ),
                 yaxis=dict(
                     dtick=0.25,  # Khoảng cách giữa các mốc trên trục Y là 0.25
-                    title="Y Axis"
+                    title=dict(
+                        text="Y Axis",  # Nội dung tiêu đề của trục Y
+                        font=dict(size=16)  # Kích thước chữ
+                    )
                 ),
                 zaxis=dict(
                     dtick=0.25,  # Khoảng cách giữa các mốc trên trục Z là 0.25
-                    title="Z Axis"
+                    title=dict(
+                        text="Z Axis",  # Nội dung tiêu đề của trục Z
+                        font=dict(size=16)  # Kích thước chữ
+                    )
                 ),
                 aspectmode='data'  # Tỷ lệ dựa trên phạm vi dữ liệu
             )
         )
+
         
         # Hiển thị biểu đồ
         fig.show()
