@@ -148,7 +148,7 @@ class Plotter:
         plt.title('3D samples ' + title, fontsize=25)
         plt.show()
     
-    def plot_trajectory_dataset(self, trajectories, title='', rotate_data_whose_y_up=False):
+    def plot_trajectory_dataset(self, trajectories, title='', rotate_data_whose_y_up=False, save_plot=False):
         fig = Figure()
 
         # Tạo một danh sách các màu sắc
@@ -236,14 +236,13 @@ class Plotter:
                 aspectmode='data'  # Tỷ lệ dựa trên phạm vi dữ liệu
             )
         )
-
-        
         # Hiển thị biểu đồ
         fig.show()
 
-        # Lưu biểu đồ thành HTML
-        plot(fig, filename=f"{title}_trajectory_plot.html")
-        print(f"Trajectory plot was saved at {title}_trajectory_plot.html")
+        if save_plot:
+            # Lưu biểu đồ thành HTML
+            plot(fig, filename=f"{title}_trajectory_plot.html")
+            print(f"Trajectory plot was saved at {title}_trajectory_plot.html")
 
     def update_plot(self, one_trajectory_prediction, one_trajectory_label, color_idx, ax, swap_y_z=False):
         # Check if the color index is within the range
@@ -413,11 +412,12 @@ def main():
     #   get path of this script
     this_path = os.path.dirname(os.path.abspath(__file__))
     data_path = os.path.join(this_path, 'data/data_test_27.npy')
+    object_name = '27'
 
     data = np.load(data_path, allow_pickle=True)
     print(len(data))
     trajectories = data[:10]
-    util_plotter.plot_trajectory_dataset(trajectories, title='Test plot_trajectory_dataset', rotate_data_whose_y_up=False)
+    util_plotter.plot_trajectory_dataset(trajectories, title=object_name, rotate_data_whose_y_up=False, save_plot=False)
 
 if __name__ == '__main__':
     main()
