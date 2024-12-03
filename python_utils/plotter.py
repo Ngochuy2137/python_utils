@@ -244,21 +244,23 @@ class Plotter:
             plot(fig, filename=f"{title}_trajectory_plot.html")
             print(f"Trajectory plot was saved at {title}_trajectory_plot.html")
 
-    def update_plot(self, one_trajectory_prediction, one_trajectory_label, color_idx, ax, swap_y_z=False):
+    def update_plot(self, one_trajectory_prediction, one_trajectory_label, color_idx, ax, rotate_data_whose_y_up=False):
         # Check if the color index is within the range
         if color_idx+1 >= len(self.colors):
             return
 
-        # Determine axis order based on swap_y_z flag
-        if swap_y_z:
+        # Determine axis order based on rotate_data_whose_y_up flag
+        if rotate_data_whose_y_up:
             x_idx, y_idx, z_idx = 0, 2, 1  # Swap y and z
+            x_mul, y_mul, z_mul = 1, -1, 1  # Invert y
         else:
             x_idx, y_idx, z_idx = 0, 1, 2  # Default order
+            x_mul, y_mul, z_mul = 1, 1, 1
 
         # Plot actual and predicted trajectories
-        ax.plot(one_trajectory_label[:, x_idx], one_trajectory_label[:, y_idx], one_trajectory_label[:, z_idx],
+        ax.plot(one_trajectory_label[:, x_idx]*x_mul, one_trajectory_label[:, y_idx]*y_mul, one_trajectory_label[:, z_idx]*z_mul,
                     'o', color=self.colors[color_idx], alpha=0.5, label=f'Test {color_idx + 1} Actual Trajectory', markersize=10)
-        ax.plot(one_trajectory_prediction[:, x_idx], one_trajectory_prediction[:, y_idx], one_trajectory_prediction[:, z_idx],
+        ax.plot(one_trajectory_prediction[:, x_idx]*x_mul, one_trajectory_prediction[:, y_idx]*y_mul, one_trajectory_prediction[:, z_idx]*z_mul,
                     '+', color=self.colors[color_idx], label=f'Test {color_idx + 1} Predicted Trajectory', markersize=10)
 
         # Calculate limits
@@ -269,8 +271,8 @@ class Plotter:
 
         # Set labels based on axis order
         ax.set_xlabel('X')
-        ax.set_ylabel('Z' if swap_y_z else 'Y')
-        ax.set_zlabel('Y' if swap_y_z else 'Z')
+        ax.set_ylabel('Z' if rotate_data_whose_y_up else 'Y')
+        ax.set_zlabel('Y' if rotate_data_whose_y_up else 'Z')
 
         # Calculate and display the distance for the last points
         actual_point = one_trajectory_label[-1, [x_idx, y_idx, z_idx]]
@@ -287,7 +289,7 @@ class Plotter:
         mid_point = (actual_point + predicted_point) / 2
         ax.text(mid_point[0], mid_point[1], mid_point[2], f'{distance:.2f}', color='red', fontsize=20)  # Change fontsize here
 
-    def plot_predictions(self, predictions, test_labels, lim_plot_num=None, swap_y_z=False, title=''):
+    def plot_predictions(self, predictions, test_labels, lim_plot_num=None, rotate_data_whose_y_up=False, title=''):
         if lim_plot_num:
             predictions = predictions[:lim_plot_num]
             test_labels = test_labels[:lim_plot_num]
@@ -295,7 +297,7 @@ class Plotter:
         figure = plt.figure()
         ax = figure.add_subplot(111, projection='3d')
         for i in range (lim_plot_num):
-            self.update_plot(predictions[i], test_labels[i], i, ax, swap_y_z=False)
+            self.update_plot(predictions[i], test_labels[i], i, ax, rotate_data_whose_y_up=False)
 
         plt.legend()
         plt.title('3D Predictions ' + title, fontsize=18)
