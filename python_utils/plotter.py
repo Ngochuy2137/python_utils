@@ -33,8 +33,9 @@ class Plotter:
 
     def plot_predictions_plotly(self, inputs, labels, predictions, title='', rotate_data_whose_y_up=True, save_plot=False):
         self.plotter_plotply.plot_predictions(inputs=inputs, labels=labels, predictions=predictions, 
-                                              rotate_data_whose_y_up=rotate_data_whose_y_up, 
-                                              save_html=save_plot)
+                                                rotate_data_whose_y_up=rotate_data_whose_y_up, 
+                                                title=title,
+                                                save_html=save_plot)
     # def plot_samples(self, samples_simbols_list, title=''):
     #     # shuffle samples_simbols_list
     #     random.shuffle(samples_simbols_list)
@@ -314,7 +315,7 @@ class Plotter:
         figure = plt.figure()
         ax = figure.add_subplot(111, projection='3d')
         for i in range (lim_plot_num):
-            self.update_plot(predictions[i], test_labels[i], i, ax, rotate_data_whose_y_up=False)
+            self.update_plot(predictions[i], test_labels[i], i, ax, rotate_data_whose_y_up=rotate_data_whose_y_up)
 
         plt.legend()
         plt.title('3D Predictions ' + title, fontsize=18)
