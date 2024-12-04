@@ -313,6 +313,8 @@ class Plotter:
             test_labels = test_labels[:lim_plot_num]
         lim_plot_num = min(len(self.colors), len(predictions))
         figure = plt.figure()
+        # set size of figure
+        figure.set_size_inches(12, 12)
         ax = figure.add_subplot(111, projection='3d')
         for i in range (lim_plot_num):
             self.update_plot(predictions[i], test_labels[i], i, ax, rotate_data_whose_y_up=rotate_data_whose_y_up)
