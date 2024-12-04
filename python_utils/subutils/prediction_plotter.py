@@ -15,7 +15,7 @@ class PredictionPlotter:
             for _ in range(n)
         ]
 
-    def _plot_scatter(self, x, y, z, marker_size, marker_symbol, color, name):
+    def _plot_scatter(self, x, y, z, marker_size, marker_symbol, color, name, legendgroup):
         """Hàm con để vẽ một tập hợp điểm trong Scatter3d."""
         return Scatter3d(
             x=x,
@@ -28,10 +28,11 @@ class PredictionPlotter:
                 symbol=marker_symbol,
                 opacity=0.8
             ),
-            name=name
+            name=name,
+            legendgroup=legendgroup  # Gán nhóm legend
         )
 
-    def _plot_dashed_line(self, start, end, color):
+    def _plot_dashed_line(self, start, end, color, legendgroup):
         """Hàm con để vẽ một đường đứt đoạn nối hai điểm."""
         return Scatter3d(
             x=[start[0], end[0]],
@@ -43,10 +44,11 @@ class PredictionPlotter:
                 width=2,
                 dash='dash'
             ),
-            showlegend=False
+            showlegend=False,
+            legendgroup=legendgroup  # Gán nhóm legend
         )
 
-    def _plot_text(self, x, y, z, text, color, size):
+    def _plot_text(self, x, y, z, text, color, size, legendgroup):
         """Hàm con để thêm văn bản vào đồ thị."""
         return Scatter3d(
             x=[x],
@@ -55,7 +57,8 @@ class PredictionPlotter:
             mode='text',
             text=[text],
             textfont=dict(size=size, color=color),
-            showlegend=False
+            showlegend=False,
+            legendgroup=legendgroup  # Gán nhóm legend
         )
 
     def create_figure(self, predictions, labels, inputs, rotate_data_whose_y_up=False, notes=''):
@@ -66,6 +69,8 @@ class PredictionPlotter:
         self._generate_colors(n_trajectories)
 
         for i, (input_traj, pred_traj, label_traj) in enumerate(zip(inputs, predictions, labels)):
+            legendgroup = f'Trajectory {i+1}'  # Nhóm legend cho từng quỹ đạo
+
             def process_trajectory(traj):
                 if rotate_data_whose_y_up:
                     return traj[:, 0], -traj[:, 2], traj[:, 1]
@@ -76,29 +81,29 @@ class PredictionPlotter:
             label_x, label_y, label_z = process_trajectory(label_traj)
 
             # Vẽ inputs
-            fig.add_trace(self._plot_scatter(input_x, input_y, input_z, 5, 'diamond', self.colors[i], f'Input {i+1}'))
+            fig.add_trace(self._plot_scatter(input_x, input_y, input_z, 5, 'diamond', self.colors[i], f'Input {i+1}', legendgroup))
 
             # Vẽ predictions
-            fig.add_trace(self._plot_scatter(pred_x, pred_y, pred_z, 6, 'circle', self.colors[i], f'Prediction {i+1}'))
+            fig.add_trace(self._plot_scatter(pred_x, pred_y, pred_z, 6, 'circle', self.colors[i], f'Prediction {i+1}', legendgroup))
 
             # Vẽ labels
-            fig.add_trace(self._plot_scatter(label_x, label_y, label_z, 4, 'x', self.colors[i], f'Label {i+1}'))
+            fig.add_trace(self._plot_scatter(label_x, label_y, label_z, 4, 'x', self.colors[i], f'Label {i+1}', legendgroup))
 
             # Tính điểm cuối của predictions và labels
             pred_end = np.array([pred_x[-1], pred_y[-1], pred_z[-1]])
             label_end = np.array([label_x[-1], label_y[-1], label_z[-1]])
 
             # Thêm text "end" cho điểm cuối của predictions và labels
-            fig.add_trace(self._plot_text(pred_end[0], pred_end[1], pred_end[2], "end (P)", self.colors[i], 10))
-            fig.add_trace(self._plot_text(label_end[0], label_end[1], label_end[2], "end (L)", self.colors[i], 10))
+            fig.add_trace(self._plot_text(pred_end[0], pred_end[1], pred_end[2], "end (P)", self.colors[i], 10, legendgroup))
+            fig.add_trace(self._plot_text(label_end[0], label_end[1], label_end[2], "end (L)", self.colors[i], 10, legendgroup))
 
             # Vẽ đường đứt đoạn nối prediction và label cuối
-            fig.add_trace(self._plot_dashed_line(pred_end, label_end, 'red'))
+            fig.add_trace(self._plot_dashed_line(pred_end, label_end, 'red', legendgroup))
 
             # Tính và hiển thị khoảng cách Euclidean giữa prediction và label cuối
             distance = np.linalg.norm(pred_end - label_end)
             mid_point = (pred_end + label_end) / 2  # Tính điểm giữa
-            fig.add_trace(self._plot_text(mid_point[0], mid_point[1], mid_point[2], f"{distance:.2f}", "red", 12))
+            fig.add_trace(self._plot_text(mid_point[0], mid_point[1], mid_point[2], f"{distance:.2f}", "red", 12, legendgroup))
 
         # Cập nhật bố cục
         fig.update_layout(
