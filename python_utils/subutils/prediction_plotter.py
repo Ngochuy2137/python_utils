@@ -64,7 +64,7 @@ class PredictionPlotter:
             legendgroup=legendgroup  # Gán nhóm legend
         )
 
-    def create_figure(self, inputs, labels, predictions, rotate_data_whose_y_up=False, notes=''):
+    def create_figure(self, inputs, labels, predictions, rotate_data_whose_y_up=False, title=''):
         fig = Figure()
 
         # Tạo danh sách màu sắc
@@ -116,7 +116,7 @@ class PredictionPlotter:
         # Cập nhật bố cục
         fig.update_layout(
             title=dict(
-                text=f"{notes} - Inputs vs Labels vs Predictions",
+                text=f"{title} - Inputs vs Labels vs Predictions",
                 font=dict(size=32),
                 x=0.5
             ),
@@ -151,10 +151,12 @@ class PredictionPlotter:
         )
         return fig
 
-    def plot_predictions(self, inputs, labels, predictions, rotate_data_whose_y_up=False, save_html=False):
-        fig = self.create_figure(inputs, labels, predictions, rotate_data_whose_y_up)
+    def plot_predictions(self, inputs, labels, predictions, rotate_data_whose_y_up=False, title='', save_html=False):
+        fig = self.create_figure(inputs, labels, predictions, rotate_data_whose_y_up, title=title)
         if save_html:
-            plot(fig, filename='trajectory_plot.html', auto_open=True)
+            file_name = title + '_inputs_labels_predictions.html'
+            plot(fig, filename=file_name, auto_open=True)
+            print(f'The plot is saved as {file_name}')
         else:
             pio.show(fig)
 
