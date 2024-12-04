@@ -111,7 +111,7 @@ class PredictionPlotter:
                                         mid_point[2], 
                                         f"             err={distance:.2f} \
                                         <br>input: {len(input_traj)} - label: {len(label_traj)} - pred: {len(pred_traj)}", 
-                                        "red", 12, legendgroup))
+                                        "red", 32, legendgroup))
 
         # Cập nhật bố cục
         fig.update_layout(
@@ -125,6 +125,11 @@ class PredictionPlotter:
                 title=dict(text="Legend Title", font=dict(size=18))
             ),
             scene=dict(
+                # camera=dict(
+                #     eye=dict(x=2.5, y=2, z=1.5),  # Vị trí camera trong không gian 3D
+                #     center=dict(x=2.5, y=-1.1, z=1.5),  # Điểm mà camera hướng tới
+                #     up=dict(x=0, y=-1, z=0)  # Hướng "lên" (thường là trục z)
+                # ),
                 xaxis=dict(
                     dtick=0.25,
                     title=dict(
@@ -146,7 +151,7 @@ class PredictionPlotter:
                         font=dict(size=16)
                     )
                 ),
-                aspectmode='data'
+                aspectmode='data',
             ),
         )
         return fig
