@@ -6,8 +6,7 @@ import plotly.io as pio
 
 class PredictionPlotter:
     def __init__(self):
-        self.colors = []
-
+        pass
     def _generate_colors(self, n):
         """Tạo danh sách màu sắc ngẫu nhiên."""
         self.colors = [
@@ -72,7 +71,7 @@ class PredictionPlotter:
         n_trajectories = len(predictions)
         self._generate_colors(n_trajectories)
 
-        for i, (input_traj, pred_traj, label_traj) in enumerate(zip(inputs, predictions, labels)):
+        for i, (input_traj, label_traj, pred_traj) in enumerate(zip(inputs, labels, predictions)):
             legendgroup = f'Trajectory {i+1}'  # Nhóm legend cho từng quỹ đạo
 
             def process_trajectory(traj):
@@ -81,8 +80,8 @@ class PredictionPlotter:
                 return traj[:, 0], traj[:, 1], traj[:, 2]
 
             input_x, input_y, input_z = process_trajectory(input_traj)
-            pred_x, pred_y, pred_z = process_trajectory(pred_traj)
             label_x, label_y, label_z = process_trajectory(label_traj)
+            pred_x, pred_y, pred_z = process_trajectory(pred_traj)
 
             # Vẽ inputs
             fig.add_trace(self._plot_scatter(input_x, input_y, input_z, 12, 'circle-open', self.colors[i], f'Input {i+1}', legendgroup, line_width=2))
@@ -91,7 +90,7 @@ class PredictionPlotter:
             fig.add_trace(self._plot_scatter(label_x, label_y, label_z, 6, 'circle', self.colors[i], f'Label {i+1}', legendgroup, line_width=1, opacity=0.5))
 
             # Vẽ predictions
-            fig.add_trace(self._plot_scatter(pred_x, pred_y, pred_z, 4, 'cross', self.colors[i], f'Prediction {i+1}', legendgroup))
+            fig.add_trace(self._plot_scatter(pred_x, pred_y, pred_z, 4, 'cross', self.colors[i], f'Prediction {i+1}', legendgroup, line_width=1))
 
             # Tính điểm cuối của predictions và labels
             pred_end = np.array([pred_x[-1], pred_y[-1], pred_z[-1]])
@@ -110,7 +109,7 @@ class PredictionPlotter:
             fig.add_trace(self._plot_text(mid_point[0], 
                                         mid_point[1], 
                                         mid_point[2], 
-                                        f"             err={distance:.2f} 
+                                        f"             err={distance:.2f} \
                                         <br>input: {len(input_traj)} - label: {len(label_traj)} - pred: {len(pred_traj)}", 
                                         "red", 12, legendgroup))
 

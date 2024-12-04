@@ -1,6 +1,4 @@
 from mpl_toolkits.mplot3d import Axes3D
-# import matplotlib
-# matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 import rospy
@@ -12,6 +10,7 @@ from plotly.graph_objects import Figure, Scatter3d
 from plotly.offline import plot
 import os
 
+from .subutils.prediction_plotter import PredictionPlotter
 class Plotter:
     def __init__(self, topic_name='plotter/visualization_marker'):
         self.colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'orange', 'purple', 'pink', 'brown', 'gray']
@@ -30,7 +29,12 @@ class Plotter:
         ]
         self.pub = rospy.Publisher(topic_name, MarkerArray, queue_size=1)
         self.last_marker_id = 0
+        self.plotter_plotply = PredictionPlotter()
 
+    def plot_predictions_plotly(self, inputs, labels, predictions, title='', rotate_data_whose_y_up=True, save_plot=False):
+        self.plotter_plotply.plot_predictions(inputs=inputs, labels=labels, predictions=predictions, 
+                                              rotate_data_whose_y_up=rotate_data_whose_y_up, 
+                                              save_html=save_plot)
     # def plot_samples(self, samples_simbols_list, title=''):
     #     # shuffle samples_simbols_list
     #     random.shuffle(samples_simbols_list)
@@ -91,8 +95,8 @@ class Plotter:
     #     plt.show()
 
     def plot_samples(self, samples, title='', rotate_data_whose_y_up=False, plot_all=False, shuffle=False):
-        print('Plotting samples...')
-        figure = plt.figure(num=1)
+        print('Plotting samples... 111')
+        figure = plt.figure(num=1, figsize=(12, 12))
         ax = figure.add_subplot(111, projection='3d')
 
         if shuffle:
@@ -104,8 +108,8 @@ class Plotter:
         y_max = -1000
         z_min = 1000
         z_max = -1000
-        for i in range (len(samples)):
-            if i >= len(self.colors)-1:
+        for i in range(len(samples)):
+            if i >= len(self.colors) - 1:
                 if not plot_all:
                     break
                 color_current = self.colors[-1]
@@ -115,7 +119,7 @@ class Plotter:
             sample = np.array(samples[i])
 
             if rotate_data_whose_y_up:
-                # change the order of the axis so that z is up and follow the right-hand rule
+                # Change the order of the axis so that z is up and follow the right-hand rule
                 x_data = sample[:, 0]
                 y_data = -sample[:, 2]
                 z_data = sample[:, 1]
@@ -125,8 +129,8 @@ class Plotter:
                 z_data = sample[:, 2]
 
             ax.plot(x_data, y_data, z_data, 
-                        'o', color=color_current, alpha=0.5, label='Test '+str(i+1) + 'Sample Trajectory')
-            
+                    'o', color=color_current, alpha=0.5, label='Test ' + str(i + 1) + ' Sample Trajectory')
+
             # Add 'end' text at the last point
             ax.text(x_data[-1], y_data[-1], z_data[-1], 'end', color=color_current, fontsize=10)
 
@@ -136,10 +140,23 @@ class Plotter:
             y_max = max(y_max, y_data.max())
             z_min = min(z_min, z_data.min())
             z_max = max(z_max, z_data.max())
-            
-        ax.set_xlim([x_min, x_max])
-        ax.set_ylim([y_min, y_max])
-        ax.set_zlim([z_min, z_max])
+        
+        # Calculate ranges
+        x_range = x_max - x_min
+        y_range = y_max - y_min
+        z_range = z_max - z_min
+        max_range = max(x_range, y_range, z_range)
+
+        # Calculate midpoints
+        x_mid = (x_max + x_min) / 2
+        y_mid = (y_max + y_min) / 2
+        z_mid = (z_max + z_min) / 2
+
+        # Set equal aspect ratio
+        ax.set_xlim([x_mid - max_range / 2, x_mid + max_range / 2])
+        ax.set_ylim([y_mid - max_range / 2, y_mid + max_range / 2])
+        ax.set_zlim([z_mid - max_range / 2, z_mid + max_range / 2])
+
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_zlabel('Z')
