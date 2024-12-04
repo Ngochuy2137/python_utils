@@ -46,6 +46,18 @@ class PredictionPlotter:
             showlegend=False
         )
 
+    def _plot_text(self, x, y, z, text, color, size):
+        """Hàm con để thêm văn bản vào đồ thị."""
+        return Scatter3d(
+            x=[x],
+            y=[y],
+            z=[z],
+            mode='text',
+            text=[text],
+            textfont=dict(size=size, color=color),
+            showlegend=False
+        )
+
     def create_figure(self, predictions, labels, inputs, rotate_data_whose_y_up=False, notes=''):
         fig = Figure()
 
@@ -72,10 +84,21 @@ class PredictionPlotter:
             # Vẽ labels
             fig.add_trace(self._plot_scatter(label_x, label_y, label_z, 4, 'x', self.colors[i], f'Label {i+1}'))
 
-            # Vẽ đường đứt đoạn nối prediction và label cuối
+            # Tính điểm cuối của predictions và labels
             pred_end = np.array([pred_x[-1], pred_y[-1], pred_z[-1]])
             label_end = np.array([label_x[-1], label_y[-1], label_z[-1]])
+
+            # Thêm text "end" cho điểm cuối của predictions và labels
+            fig.add_trace(self._plot_text(pred_end[0], pred_end[1], pred_end[2], "end (P)", self.colors[i], 10))
+            fig.add_trace(self._plot_text(label_end[0], label_end[1], label_end[2], "end (L)", self.colors[i], 10))
+
+            # Vẽ đường đứt đoạn nối prediction và label cuối
             fig.add_trace(self._plot_dashed_line(pred_end, label_end, 'red'))
+
+            # Tính và hiển thị khoảng cách Euclidean giữa prediction và label cuối
+            distance = np.linalg.norm(pred_end - label_end)
+            mid_point = (pred_end + label_end) / 2  # Tính điểm giữa
+            fig.add_trace(self._plot_text(mid_point[0], mid_point[1], mid_point[2], f"{distance:.2f}", "red", 12))
 
         # Cập nhật bố cục
         fig.update_layout(
@@ -110,20 +133,17 @@ class PredictionPlotter:
                         font=dict(size=16)
                     )
                 ),
-                # Thiết lập tỉ lệ của các trục𝑥x,𝑦y, và𝑧z dựa trên phạm vi của dữ liệu (data) trên từng trục.
-                # Điều này đảm bảo rằng các trục có tỉ lệ thực tế chính xác theo dữ liệu.
                 aspectmode='data'
             ),
         )
         return fig
 
-    def plot_preditions(self, predictions, labels, inputs, rotate_data_whose_y_up=False, save_html=False):
+    def plot_predictions(self, predictions, labels, inputs, rotate_data_whose_y_up=False, save_html=False):
         fig = self.create_figure(predictions, labels, inputs, rotate_data_whose_y_up)
         if save_html:
             plot(fig, filename='trajectory_plot.html', auto_open=True)
         else:
             pio.show(fig)
-        plot(fig, filename='trajectory_plot.html', auto_open=True)
 
 def main():
     # Khởi tạo Plotter
@@ -137,7 +157,7 @@ def main():
     labels = [np.random.rand(20, 3) for _ in range(n_samples)]
 
     # Tạo biểu đồ
-    plotter.plot_preditions(predictions, labels, inputs, rotate_data_whose_y_up=True, save_html=False)
+    plotter.plot_predictions(predictions, labels, inputs, rotate_data_whose_y_up=True, save_html=False)
 
 if __name__ == '__main__':
     main()
