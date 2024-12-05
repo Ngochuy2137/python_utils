@@ -64,7 +64,7 @@ class PredictionPlotter:
             legendgroup=legendgroup  # Gán nhóm legend
         )
 
-    def create_figure(self, inputs, labels, predictions, rotate_data_whose_y_up=False, title=''):
+    def create_figure(self, inputs, labels, predictions, rotate_data_whose_y_up=False, title='', font_size_note=12):
         fig = Figure()
 
         # Tạo danh sách màu sắc
@@ -111,7 +111,7 @@ class PredictionPlotter:
                                         mid_point[2], 
                                         f"             err={distance:.2f} \
                                         <br>input: {len(input_traj)} - label: {len(label_traj)} - pred: {len(pred_traj)}", 
-                                        "red", 32, legendgroup))
+                                        "red", font_size_note, legendgroup))
 
         # Cập nhật bố cục
         fig.update_layout(
@@ -156,8 +156,8 @@ class PredictionPlotter:
         )
         return fig
 
-    def plot_predictions(self, inputs, labels, predictions, rotate_data_whose_y_up=False, title='', save_html=False):
-        fig = self.create_figure(inputs, labels, predictions, rotate_data_whose_y_up, title=title)
+    def plot_predictions(self, inputs, labels, predictions, rotate_data_whose_y_up=False, title='', save_html=False, font_size_note=12):
+        fig = self.create_figure(inputs, labels, predictions, rotate_data_whose_y_up, title=title, font_size_note=font_size_note)
         if save_html:
             file_name = title + '_inputs_labels_predictions.html'
             plot(fig, filename=file_name, auto_open=True)
