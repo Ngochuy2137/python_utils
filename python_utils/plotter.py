@@ -9,6 +9,7 @@ import random
 from plotly.graph_objects import Figure, Scatter3d
 from plotly.offline import plot
 import os
+import plotly.graph_objects as go
 
 from .subutils.prediction_plotter import PredictionPlotter
 class Plotter:
@@ -424,6 +425,75 @@ class Plotter:
         # Publish toàn bộ MarkerArray
         self.pub.publish(marker_array)
         rospy.loginfo("All segments, title, and end markers published to RViz.")
+
+    def plot_line_chart(self, x_values, y_values, title="Line Chart", x_label="X-axis", y_label="Y-axis", 
+                    save_html=None, x_tick_distance=None, y_tick_distance=None,
+                    font_size_title=20, font_size_label=15, font_size_tick=12):
+        """
+        Vẽ biểu đồ line chart với tùy chọn khoảng cách tick và lưu dưới dạng file HTML.
+        
+        Args:
+            x_values (list): Danh sách giá trị trên trục X.
+            y_values (list): Danh sách giá trị trên trục Y.
+            title (str): Tiêu đề của biểu đồ.
+            x_label (str): Nhãn trục X.
+            y_label (str): Nhãn trục Y.
+            save_html (str): Đường dẫn lưu file HTML. Nếu None, không lưu.
+            x_tick_distance (float): Khoảng cách giữa các tick trên trục X.
+            y_tick_distance (float): Khoảng cách giữa các tick trên trục Y.
+        """
+        if len(x_values) != len(y_values):
+            raise ValueError("Hai danh sách x_values và y_values phải có độ dài bằng nhau.")
+        
+        # Tạo biểu đồ với Plotly
+        fig = go.Figure()
+        
+        # Thêm đường và marker
+        fig.add_trace(go.Scatter(
+            x=x_values,
+            y=y_values,
+            mode='lines+markers',  # Vẽ đường, marker và text
+            # mode='lines+markers+text',  # Vẽ đường, marker và text
+            # text=[str(y) for y in y_values],  # Hiển thị giá trị y
+            # textposition="top center"  # Đặt text phía trên marker
+        ))
+        
+        # Cấu hình tiêu đề và nhãn
+        fig.update_layout(
+            template="plotly_white",  # Giao diện sáng
+            title=dict(
+                text=title,
+                font=dict(size=font_size_title),  # Kích thước font của tiêu đề
+                x=0.5 # Canh giữa tiêu đề
+            ),
+            xaxis=dict(
+                title=dict(
+                    text=x_label,
+                    font=dict(size=font_size_label)  # Kích thước font nhãn trục X
+                ),
+                tickfont=dict(size=font_size_tick),  # Kích thước font giá trị tick trục X
+                showgrid=True,
+                dtick=x_tick_distance  # Khoảng cách tick trên trục X
+            ),
+            yaxis=dict(
+                title=dict(
+                    text=y_label,
+                    font=dict(size=font_size_label)  # Kích thước font nhãn trục Y
+                ),
+                tickfont=dict(size=font_size_tick),  # Kích thước font giá trị tick trục Y
+                showgrid=True,
+                dtick=y_tick_distance  # Khoảng cách tick trên trục Y
+            ),
+        )
+        
+        # Hiển thị biểu đồ
+        fig.show()
+        
+        # Lưu biểu đồ dưới dạng HTML nếu save_html được cung cấp
+        if save_html:
+            fig.write_html(save_html)
+            print(f"Biểu đồ đã được lưu tại: {save_html}")
+
 
 
 def main():
