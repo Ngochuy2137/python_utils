@@ -32,11 +32,11 @@ class Plotter:
         self.last_marker_id = 0
         self.plotter_plotply = PredictionPlotter()
 
-    def plot_predictions_plotly(self, inputs, labels, predictions, title='', rotate_data_whose_y_up=True, save_plot=False):
+    def plot_predictions_plotly(self, inputs, labels, predictions, title='', rotate_data_whose_y_up=True, save_plot=False, font_size_note=12):
         self.plotter_plotply.plot_predictions(inputs=inputs, labels=labels, predictions=predictions, 
                                                 rotate_data_whose_y_up=rotate_data_whose_y_up, 
                                                 title=title,
-                                                save_html=save_plot)
+                                                save_html=save_plot, font_size_note=font_size_note)
     # def plot_samples(self, samples_simbols_list, title=''):
     #     # shuffle samples_simbols_list
     #     random.shuffle(samples_simbols_list)
@@ -426,45 +426,51 @@ class Plotter:
         self.pub.publish(marker_array)
         rospy.loginfo("All segments, title, and end markers published to RViz.")
 
-    def plot_line_chart(self, x_values, y_values, title="Line Chart", x_label="X-axis", y_label="Y-axis", 
-                    save_html=None, x_tick_distance=None, y_tick_distance=None,
-                    font_size_title=20, font_size_label=15, font_size_tick=12):
+    def plot_line_chart(self, x_values, y_values, legends=None, title="Line Chart", x_label="X-axis", y_label="Y-axis", 
+                        save_html=None, x_tick_distance=None, y_tick_distance=None,
+                        font_size_title=20, font_size_label=15, font_size_tick=12):
         """
-        Vẽ biểu đồ line chart với tùy chọn khoảng cách tick và lưu dưới dạng file HTML.
+        Vẽ biểu đồ line chart với nhiều đường đồ thị, tùy chọn khoảng cách tick và lưu dưới dạng file HTML.
         
         Args:
             x_values (list): Danh sách giá trị trên trục X.
-            y_values (list): Danh sách giá trị trên trục Y.
+            y_values (list of list): Danh sách các chuỗi giá trị trên trục Y.
+            legends (list): Tên các đường đồ thị. Nếu None, sử dụng mặc định "Series 1", "Series 2", ...
             title (str): Tiêu đề của biểu đồ.
             x_label (str): Nhãn trục X.
             y_label (str): Nhãn trục Y.
             save_html (str): Đường dẫn lưu file HTML. Nếu None, không lưu.
             x_tick_distance (float): Khoảng cách giữa các tick trên trục X.
             y_tick_distance (float): Khoảng cách giữa các tick trên trục Y.
+            font_size_title (int): Kích thước font của tiêu đề.
+            font_size_label (int): Kích thước font của nhãn trục.
+            font_size_tick (int): Kích thước font của giá trị tick trên trục.
         """
-        if len(x_values) != len(y_values):
-            raise ValueError("Hai danh sách x_values và y_values phải có độ dài bằng nhau.")
+        if not all(len(x_values) == len(y) for y in y_values):
+            raise ValueError("Độ dài của x_values phải bằng với từng chuỗi trong y_values.")
         
-        # Tạo biểu đồ với Plotly
+        if legends is None:
+            legends = [f"Series {i+1}" for i in range(len(y_values))]
+
+        if len(legends) != len(y_values):
+            raise ValueError("The number of legends must equal the number of strings in y_values.")
+        
         fig = go.Figure()
         
-        # Thêm đường và marker
-        fig.add_trace(go.Scatter(
-            x=x_values,
-            y=y_values,
-            mode='lines+markers',  # Vẽ đường, marker và text
-            # mode='lines+markers+text',  # Vẽ đường, marker và text
-            # text=[str(y) for y in y_values],  # Hiển thị giá trị y
-            # textposition="top center"  # Đặt text phía trên marker
-        ))
+        for y, legend in zip(y_values, legends):
+            fig.add_trace(go.Scatter(
+                x=x_values,
+                y=y,
+                mode='lines+markers',  
+                name=legend  
+            ))
         
-        # Cấu hình tiêu đề và nhãn
+        # Cấu hình tiêu đề, nhãn trục, và kích thước font
         fig.update_layout(
-            template="plotly_white",  # Giao diện sáng
             title=dict(
                 text=title,
                 font=dict(size=font_size_title),  # Kích thước font của tiêu đề
-                x=0.5 # Canh giữa tiêu đề
+                x=0.5  # Căn giữa tiêu đề
             ),
             xaxis=dict(
                 title=dict(
@@ -484,6 +490,7 @@ class Plotter:
                 showgrid=True,
                 dtick=y_tick_distance  # Khoảng cách tick trên trục Y
             ),
+            template="plotly_white"
         )
         
         # Hiển thị biểu đồ
