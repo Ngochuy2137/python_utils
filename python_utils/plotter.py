@@ -428,9 +428,9 @@ class Plotter:
         rospy.loginfo("All segments, title, and end markers published to RViz.")
 
     def plot_line_chart(self, x_values, y_values, legends=None, title="Line Chart", x_label="X-axis", y_label="Y-axis", 
-                        save_plot=None, x_tick_distance=None, y_tick_distance=None,
-                        font_size_title=20, font_size_label=15, font_size_tick=12,
-                        keep_source_order=False):
+                    save_plot=None, x_tick_distance=None, y_tick_distance=None,
+                    font_size_title=20, font_size_label=15, font_size_tick=12,
+                    keep_source_order=False, y_stds=None):
         """
         Vẽ biểu đồ line chart với nhiều đường đồ thị, tùy chọn khoảng cách tick và lưu dưới dạng file HTML.
         
@@ -448,6 +448,7 @@ class Plotter:
             font_size_label (int): Kích thước font của nhãn trục.
             font_size_tick (int): Kích thước font của giá trị tick trên trục.
             keep_source_order (bool): Giữ nguyên thứ tự của x_values. Mặc định là False.
+            y_stds (list of list): Độ lệch chuẩn tương ứng với y_values. Nếu None, không vẽ sai số.
         """
         if not all(len(x_values) == len(y) for y in y_values):
             raise ValueError("Độ dài của x_values phải bằng với từng chuỗi trong y_values.")
@@ -458,19 +459,47 @@ class Plotter:
         if len(legends) != len(y_values):
             raise ValueError("The number of legends must equal the number of strings in y_values.")
         
+        if y_stds is not None and len(y_stds) != len(y_values):
+            raise ValueError("The number of y_stds must equal the number of y_values.")
+        
         # Nếu giữ thứ tự, ép kiểu x_values thành string
         if keep_source_order:
             x_values = [str(x) for x in x_values]
         
         fig = go.Figure()
         
-        for y, legend in zip(y_values, legends):
+        for i, (y, legend) in enumerate(zip(y_values, legends)):
+            # Thêm đường dữ liệu chính
             fig.add_trace(go.Scatter(
                 x=x_values,
                 y=y,
                 mode='lines+markers',  
                 name=legend  
             ))
+            
+            # Thêm error bars nếu có y_stds
+            if y_stds:
+                y_std = y_stds[i]
+                fig.add_trace(go.Scatter(
+                    x=x_values,
+                    y=[y_val + std for y_val, std in zip(y, y_std)],  # Y trên (upper bound)
+                    mode='lines',
+                    line=dict(width=0),  # Ẩn đường
+                    name=f"{legend} + Std",
+                    showlegend=False,
+                    hoverinfo="skip",
+                    fill=None
+                ))
+                fig.add_trace(go.Scatter(
+                    x=x_values,
+                    y=[y_val - std for y_val, std in zip(y, y_std)],  # Y dưới (lower bound)
+                    mode='lines',
+                    line=dict(width=0),  # Ẩn đường
+                    name=f"{legend} - Std",
+                    showlegend=False,
+                    hoverinfo="skip",
+                    fill='tonexty'  # Đổ bóng
+                ))
         
         # Cấu hình tiêu đề, nhãn trục, và kích thước font
         fig.update_layout(
