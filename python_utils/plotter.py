@@ -502,25 +502,29 @@ class Plotter:
                 ))
         
         # Cấu hình tiêu đề, nhãn trục, và kích thước font
+        xaxis_config = {
+            "title": dict(
+                text=x_label,
+                font=dict(size=font_size_label)
+            ),
+            "tickfont": dict(size=font_size_tick),
+            "showgrid": True,
+        }
+        if keep_source_order:
+            xaxis_config.update({
+                "categoryorder": "array",
+                "categoryarray": x_values
+            })
+        else:
+            xaxis_config["dtick"] = x_tick_distance
+
         fig.update_layout(
             title=dict(
                 text=title,
                 font=dict(size=font_size_title),  # Kích thước font của tiêu đề
                 x=0.5  # Căn giữa tiêu đề
             ),
-            xaxis=dict(
-                title=dict(
-                    text=x_label,
-                    font=dict(size=font_size_label)  # Kích thước font nhãn trục X
-                ),
-                tickfont=dict(size=font_size_tick),  # Kích thước font giá trị tick trục X
-                showgrid=True,
-                dtick=x_tick_distance,  # Khoảng cách tick trên trục X
-                **({
-                    "categoryorder": "array",
-                    "categoryarray": x_values
-                } if keep_source_order else {})
-            ),
+            xaxis=xaxis_config,
             yaxis=dict(
                 title=dict(
                     text=y_label,
