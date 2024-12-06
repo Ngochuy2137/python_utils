@@ -32,11 +32,12 @@ class Plotter:
         self.last_marker_id = 0
         self.plotter_plotply = PredictionPlotter()
 
-    def plot_predictions_plotly(self, inputs, labels, predictions, title='', rotate_data_whose_y_up=True, save_plot=False, font_size_note=12):
+    def plot_predictions_plotly(self, inputs, labels, predictions, title='', rotate_data_whose_y_up=True, save_plot=False, font_size_note=12, show_all_as_default=True):
         self.plotter_plotply.plot_predictions(inputs=inputs, labels=labels, predictions=predictions, 
                                                 rotate_data_whose_y_up=rotate_data_whose_y_up, 
                                                 title=title,
-                                                save_html=save_plot, font_size_note=font_size_note)
+                                                save_plot=save_plot, font_size_note=font_size_note,
+                                                show_all_as_default=show_all_as_default)
     # def plot_samples(self, samples_simbols_list, title=''):
     #     # shuffle samples_simbols_list
     #     random.shuffle(samples_simbols_list)
@@ -427,8 +428,9 @@ class Plotter:
         rospy.loginfo("All segments, title, and end markers published to RViz.")
 
     def plot_line_chart(self, x_values, y_values, legends=None, title="Line Chart", x_label="X-axis", y_label="Y-axis", 
-                        save_html=None, x_tick_distance=None, y_tick_distance=None,
-                        font_size_title=20, font_size_label=15, font_size_tick=12):
+                        save_plot=None, x_tick_distance=None, y_tick_distance=None,
+                        font_size_title=20, font_size_label=15, font_size_tick=12,
+                        keep_source_order=False):
         """
         Vẽ biểu đồ line chart với nhiều đường đồ thị, tùy chọn khoảng cách tick và lưu dưới dạng file HTML.
         
@@ -439,12 +441,13 @@ class Plotter:
             title (str): Tiêu đề của biểu đồ.
             x_label (str): Nhãn trục X.
             y_label (str): Nhãn trục Y.
-            save_html (str): Đường dẫn lưu file HTML. Nếu None, không lưu.
+            save_plot (str): Đường dẫn lưu file HTML. Nếu None, không lưu.
             x_tick_distance (float): Khoảng cách giữa các tick trên trục X.
             y_tick_distance (float): Khoảng cách giữa các tick trên trục Y.
             font_size_title (int): Kích thước font của tiêu đề.
             font_size_label (int): Kích thước font của nhãn trục.
             font_size_tick (int): Kích thước font của giá trị tick trên trục.
+            keep_source_order (bool): Giữ nguyên thứ tự của x_values. Mặc định là False.
         """
         if not all(len(x_values) == len(y) for y in y_values):
             raise ValueError("Độ dài của x_values phải bằng với từng chuỗi trong y_values.")
@@ -454,6 +457,10 @@ class Plotter:
 
         if len(legends) != len(y_values):
             raise ValueError("The number of legends must equal the number of strings in y_values.")
+        
+        # Nếu giữ thứ tự, ép kiểu x_values thành string
+        if keep_source_order:
+            x_values = [str(x) for x in x_values]
         
         fig = go.Figure()
         
@@ -479,7 +486,11 @@ class Plotter:
                 ),
                 tickfont=dict(size=font_size_tick),  # Kích thước font giá trị tick trục X
                 showgrid=True,
-                dtick=x_tick_distance  # Khoảng cách tick trên trục X
+                dtick=x_tick_distance,  # Khoảng cách tick trên trục X
+                **({
+                    "categoryorder": "array",
+                    "categoryarray": x_values
+                } if keep_source_order else {})
             ),
             yaxis=dict(
                 title=dict(
@@ -496,10 +507,14 @@ class Plotter:
         # Hiển thị biểu đồ
         fig.show()
         
-        # Lưu biểu đồ dưới dạng HTML nếu save_html được cung cấp
-        if save_html:
-            fig.write_html(save_html)
-            print(f"Biểu đồ đã được lưu tại: {save_html}")
+        # Lưu biểu đồ dưới dạng HTML nếu save_plot được cung cấp
+        if save_plot:
+            # replace all space in title with underscore
+            file_name = title.replace(' ', '_')
+            file_name = f'{file_name}.html'
+            plot(fig, filename=file_name, auto_open=True)
+            print(f'The plot is saved as {file_name}')
+
 
 
 
