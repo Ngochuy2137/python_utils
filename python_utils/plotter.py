@@ -430,7 +430,7 @@ class Plotter:
     def plot_line_chart(self, x_values, y_values, legends=None, title="Line Chart", x_label="X-axis", y_label="Y-axis", 
                     save_plot=None, x_tick_distance=None, y_tick_distance=None,
                     font_size_title=20, font_size_label=15, font_size_tick=12,
-                    keep_source_order=False, y_stds=None):
+                    keep_source_order=False, y_stds=None, std_display_mode="fill"):
         """
         Vẽ biểu đồ line chart với nhiều đường đồ thị, tùy chọn khoảng cách tick và lưu dưới dạng file HTML.
         
@@ -449,6 +449,7 @@ class Plotter:
             font_size_tick (int): Kích thước font của giá trị tick trên trục.
             keep_source_order (bool): Giữ nguyên thứ tự của x_values. Mặc định là False.
             y_stds (list of list): Độ lệch chuẩn tương ứng với y_values. Nếu None, không vẽ sai số.
+            std_display_mode (str): Cách hiển thị độ lệch chuẩn: "bar" (thanh) hoặc "fill" (đổ bóng). Mặc định là "fill".
         """
         if not all(len(x_values) == len(y) for y in y_values):
             raise ValueError("Độ dài của x_values phải bằng với từng chuỗi trong y_values.")
@@ -480,26 +481,40 @@ class Plotter:
             # Thêm error bars nếu có y_stds
             if y_stds:
                 y_std = y_stds[i]
-                fig.add_trace(go.Scatter(
-                    x=x_values,
-                    y=[y_val + std for y_val, std in zip(y, y_std)],  # Y trên (upper bound)
-                    mode='lines',
-                    line=dict(width=0),  # Ẩn đường
-                    name=f"{legend} + Std",
-                    showlegend=False,
-                    hoverinfo="skip",
-                    fill=None
-                ))
-                fig.add_trace(go.Scatter(
-                    x=x_values,
-                    y=[y_val - std for y_val, std in zip(y, y_std)],  # Y dưới (lower bound)
-                    mode='lines',
-                    line=dict(width=0),  # Ẩn đường
-                    name=f"{legend} - Std",
-                    showlegend=False,
-                    hoverinfo="skip",
-                    fill='tonexty'  # Đổ bóng
-                ))
+                if std_display_mode == "fill":  # Hiển thị đổ bóng
+                    fig.add_trace(go.Scatter(
+                        x=x_values,
+                        y=[y_val + std for y_val, std in zip(y, y_std)],  # Y trên (upper bound)
+                        mode='lines',
+                        line=dict(width=0),  # Ẩn đường
+                        name=f"{legend} + Std",
+                        showlegend=False,
+                        hoverinfo="skip",
+                        fill=None
+                    ))
+                    fig.add_trace(go.Scatter(
+                        x=x_values,
+                        y=[y_val - std for y_val, std in zip(y, y_std)],  # Y dưới (lower bound)
+                        mode='lines',
+                        line=dict(width=0),  # Ẩn đường
+                        name=f"{legend} - Std",
+                        showlegend=False,
+                        hoverinfo="skip",
+                        fill='tonexty'  # Đổ bóng
+                    ))
+                elif std_display_mode == "bar":  # Hiển thị bar
+                    fig.add_trace(go.Bar(
+                        x=x_values,
+                        y=[2 * std for std in y_std],  # Chiều cao bar là 2 * độ lệch chuẩn
+                        base=[y_val - std for y_val, std in zip(y, y_std)],  # Tọa độ y bắt đầu của bar
+                        width=0.1,  # Độ rộng bar (điều chỉnh tùy ý)
+                        name=f"{legend} Std",
+                        showlegend=False,  # Không hiển thị trong legend
+                        # màu blue nhạt với độ trong suốt 0.5
+                        marker_color='rgba(0, 0, 255, 0.5)',  # Màu bar (tùy chọn)
+                        # marker_color='rgba(0, 0, 0, 0.2)',  # Màu bar (tùy chọn)
+                        opacity=0.5  # Độ trong suốt (tùy chỉnh)
+                    ))
         
         # Cấu hình tiêu đề, nhãn trục, và kích thước font
         xaxis_config = {
