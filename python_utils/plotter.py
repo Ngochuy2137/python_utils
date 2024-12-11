@@ -563,10 +563,150 @@ class Plotter:
             plot(fig, filename=file_name, auto_open=True)
             print(f'The plot is saved as {file_name}')
 
+    # def plot_bar_chart(self, x_values, y_values, legends=None, title="Bar Chart", x_label="X-axis", y_label="Y-axis", 
+    #                 save_plot=None, x_tick_distance=None, y_tick_distance=None,
+    #                 font_size_title=20, font_size_label=15, font_size_tick=12,
+    #                 keep_source_order=False, y_stds=None, bar_width=0.8):
+    #     """
+    #     Vẽ biểu đồ bar chart với nhiều cột, tùy chọn vẽ standard deviation (đoạn thẳng có chắn 2 đầu).
+        
+    #     Args:
+    #         x_values (list): Danh sách giá trị trên trục X.
+    #         y_values (list of list): Danh sách các chuỗi giá trị trên trục Y.
+    #         legends (list): Tên các chuỗi dữ liệu. Nếu None, sử dụng mặc định "Series 1", "Series 2", ...
+    #         title (str): Tiêu đề của biểu đồ.
+    #         x_label (str): Nhãn trục X.
+    #         y_label (str): Nhãn trục Y.
+    #         save_plot (str): Đường dẫn lưu file HTML. Nếu None, không lưu.
+    #         x_tick_distance (float): Khoảng cách giữa các tick trên trục X.
+    #         y_tick_distance (float): Khoảng cách giữa các tick trên trục Y.
+    #         font_size_title (int): Kích thước font của tiêu đề.
+    #         font_size_label (int): Kích thước font của nhãn trục.
+    #         font_size_tick (int): Kích thước font của giá trị tick trên trục.
+    #         keep_source_order (bool): Giữ nguyên thứ tự của x_values. Mặc định là False.
+    #         y_stds (list of list): Độ lệch chuẩn tương ứng với y_values. Nếu None, không vẽ sai số.
+    #         bar_width (float): Độ rộng của bar (từ 0.1 đến 1). Mặc định là 0.8.
+    #     """
+    #     if not all(len(x_values) == len(y) for y in y_values):
+    #         raise ValueError("Độ dài của x_values phải bằng với từng chuỗi trong y_values.")
+        
+    #     if legends is None:
+    #         legends = [f"Series {i+1}" for i in range(len(y_values))]
+
+    #     if len(legends) != len(y_values):
+    #         raise ValueError("The number of legends must equal the number of strings in y_values.")
+        
+    #     if y_stds is not None and len(y_stds) != len(y_values):
+    #         raise ValueError("The number of y_stds must equal the number of y_values.")
+        
+    #     # Nếu giữ thứ tự, ép kiểu x_values thành string
+    #     if keep_source_order:
+    #         x_values = [str(x) for x in x_values]
+        
+    #     fig = go.Figure()
+        
+    #     for i, (y, legend) in enumerate(zip(y_values, legends)):
+    #         # Thêm bar chính
+    #         fig.add_trace(go.Bar(
+    #             x=x_values,
+    #             y=y,
+    #             name=legend,
+    #             width=bar_width  # Điều chỉnh độ rộng của bar
+    #         ))
+            
+    #         # # Thêm giá trị trên đầu mỗi cột
+    #         # for x, y_val in zip(x_values, y):
+    #         #     fig.add_annotation(
+    #         #         x=x,
+    #         #         y=y_val,
+    #         #         text=f"{y_val:.2f}",  # Format giá trị
+    #         #         showarrow=False,  # Không hiển thị mũi tên
+    #         #         font=dict(size=font_size_tick),  # Kích thước font
+    #         #         xanchor='center',  # Căn giữa text theo trục X
+    #         #         yanchor='bottom'  # Hiển thị text phía trên bar
+    #         #     )
+            
+    #         # Thêm đoạn thẳng dọc và chắn trên/dưới cho standard deviation nếu có
+    #         if y_stds:
+    #             y_std = y_stds[i]
+    #             for x, y_val, std in zip(x_values, y, y_std):
+    #                 # Đoạn thẳng dọc cho standard deviation
+    #                 fig.add_trace(go.Scatter(
+    #                     x=[x, x],  # X giữ nguyên (không thay đổi giá trị)
+    #                     y=[y_val - std, y_val + std],  # Giá trị y cho đoạn dọc
+    #                     mode="lines",
+    #                     line=dict(color="black", width=2),  # Đường màu đen, dày 2px
+    #                     showlegend=False
+    #                 ))
+                    
+    #                 # Chắn trên
+    #                 fig.add_trace(go.Scatter(
+    #                     x=[x],  # X giữ nguyên
+    #                     y=[y_val + std],  # Giá trị y là đầu trên
+    #                     mode="markers",
+    #                     marker=dict(symbol="line-ew", size=10, color="black"),  # Dạng chắn ngang
+    #                     showlegend=False
+    #                 ))
+                    
+    #                 # Chắn dưới
+    #                 fig.add_trace(go.Scatter(
+    #                     x=[x],  # X giữ nguyên
+    #                     y=[y_val - std],  # Giá trị y là đầu dưới
+    #                     mode="markers",
+    #                     marker=dict(symbol="line-ew", size=10, color="black"),  # Dạng chắn ngang
+    #                     showlegend=False
+    #                 ))
+        
+    #     # Cấu hình tiêu đề, nhãn trục, và kích thước font
+    #     xaxis_config = {
+    #         "title": dict(
+    #             text=x_label,
+    #             font=dict(size=font_size_label)
+    #         ),
+    #         "tickfont": dict(size=font_size_tick),
+    #         "showgrid": True,
+    #     }
+    #     if keep_source_order:
+    #         xaxis_config.update({
+    #             "categoryorder": "array",
+    #             "categoryarray": x_values
+    #         })
+    #     else:
+    #         xaxis_config["dtick"] = x_tick_distance
+
+    #     fig.update_layout(
+    #         title=dict(
+    #             text=title,
+    #             font=dict(size=font_size_title),  # Kích thước font của tiêu đề
+    #             x=0.5  # Căn giữa tiêu đề
+    #         ),
+    #         xaxis=xaxis_config,
+    #         yaxis=dict(
+    #             title=dict(
+    #                 text=y_label,
+    #                 font=dict(size=font_size_label)  # Kích thước font nhãn trục Y
+    #             ),
+    #             tickfont=dict(size=font_size_tick),  # Kích thước font giá trị tick trên trục Y
+    #             showgrid=True,
+    #             dtick=y_tick_distance  # Khoảng cách tick trên trục Y
+    #         ),
+    #         template="plotly_white",
+    #         barmode='group'  # Các bar được nhóm theo legend
+    #     )
+        
+    #     # Hiển thị biểu đồ
+    #     fig.show()
+        
+    #     # Lưu biểu đồ dưới dạng HTML nếu save_plot được cung cấp
+    #     if save_plot:
+    #         # replace all space in title with underscore
+    #         file_name = title.replace(' ', '_')
+    #         file_name = f'{file_name}.html'
+    #         plot(fig, filename=file_name, auto_open=True)
+    #         print(f'The plot is saved as {file_name}')
+
     def plot_bar_chart(self, x_values, y_values, legends=None, title="Bar Chart", x_label="X-axis", y_label="Y-axis", 
-                    save_plot=None, x_tick_distance=None, y_tick_distance=None,
-                    font_size_title=20, font_size_label=15, font_size_tick=12,
-                    keep_source_order=False, y_stds=None, bar_width=0.8):
+                   save_plot=None, font_size_title=20, font_size_label=15, font_size_tick=12, font_size_bar_val=12, y_stds=None, bar_width=0.8):
         """
         Vẽ biểu đồ bar chart với nhiều cột, tùy chọn vẽ standard deviation (đoạn thẳng có chắn 2 đầu).
         
@@ -577,136 +717,60 @@ class Plotter:
             title (str): Tiêu đề của biểu đồ.
             x_label (str): Nhãn trục X.
             y_label (str): Nhãn trục Y.
-            save_plot (str): Đường dẫn lưu file HTML. Nếu None, không lưu.
-            x_tick_distance (float): Khoảng cách giữa các tick trên trục X.
-            y_tick_distance (float): Khoảng cách giữa các tick trên trục Y.
+            save_plot (str): Đường dẫn lưu file PNG. Nếu None, không lưu.
             font_size_title (int): Kích thước font của tiêu đề.
             font_size_label (int): Kích thước font của nhãn trục.
             font_size_tick (int): Kích thước font của giá trị tick trên trục.
-            keep_source_order (bool): Giữ nguyên thứ tự của x_values. Mặc định là False.
             y_stds (list of list): Độ lệch chuẩn tương ứng với y_values. Nếu None, không vẽ sai số.
             bar_width (float): Độ rộng của bar (từ 0.1 đến 1). Mặc định là 0.8.
         """
+        if legends is None:
+            # legends = [f"Series {i+1}" for i in range(len(y_values))]
+            legends = ['']
+        
+        # Kiểm tra độ dài dữ liệu
         if not all(len(x_values) == len(y) for y in y_values):
             raise ValueError("Độ dài của x_values phải bằng với từng chuỗi trong y_values.")
-        
-        if legends is None:
-            legends = [f"Series {i+1}" for i in range(len(y_values))]
-
-        if len(legends) != len(y_values):
-            raise ValueError("The number of legends must equal the number of strings in y_values.")
         
         if y_stds is not None and len(y_stds) != len(y_values):
             raise ValueError("The number of y_stds must equal the number of y_values.")
         
-        # Nếu giữ thứ tự, ép kiểu x_values thành string
-        if keep_source_order:
-            x_values = [str(x) for x in x_values]
-        
-        fig = go.Figure()
-        
-        for i, (y, legend) in enumerate(zip(y_values, legends)):
-            # Thêm bar chính
-            fig.add_trace(go.Bar(
-                x=x_values,
-                y=y,
-                name=legend,
-                width=bar_width  # Điều chỉnh độ rộng của bar
-            ))
-            
-            # # Thêm giá trị trên đầu mỗi cột
-            # for x, y_val in zip(x_values, y):
-            #     fig.add_annotation(
-            #         x=x,
-            #         y=y_val,
-            #         text=f"{y_val:.2f}",  # Format giá trị
-            #         showarrow=False,  # Không hiển thị mũi tên
-            #         font=dict(size=font_size_tick),  # Kích thước font
-            #         xanchor='center',  # Căn giữa text theo trục X
-            #         yanchor='bottom'  # Hiển thị text phía trên bar
-            #     )
-            
-            # Thêm đoạn thẳng dọc và chắn trên/dưới cho standard deviation nếu có
-            if y_stds:
-                y_std = y_stds[i]
-                for x, y_val, std in zip(x_values, y, y_std):
-                    # Đoạn thẳng dọc cho standard deviation
-                    fig.add_trace(go.Scatter(
-                        x=[x, x],  # X giữ nguyên (không thay đổi giá trị)
-                        y=[y_val - std, y_val + std],  # Giá trị y cho đoạn dọc
-                        mode="lines",
-                        line=dict(color="black", width=2),  # Đường màu đen, dày 2px
-                        showlegend=False
-                    ))
-                    
-                    # Chắn trên
-                    fig.add_trace(go.Scatter(
-                        x=[x],  # X giữ nguyên
-                        y=[y_val + std],  # Giá trị y là đầu trên
-                        mode="markers",
-                        marker=dict(symbol="line-ew", size=10, color="black"),  # Dạng chắn ngang
-                        showlegend=False
-                    ))
-                    
-                    # Chắn dưới
-                    fig.add_trace(go.Scatter(
-                        x=[x],  # X giữ nguyên
-                        y=[y_val - std],  # Giá trị y là đầu dưới
-                        mode="markers",
-                        marker=dict(symbol="line-ew", size=10, color="black"),  # Dạng chắn ngang
-                        showlegend=False
-                    ))
-        
-        # Cấu hình tiêu đề, nhãn trục, và kích thước font
-        xaxis_config = {
-            "title": dict(
-                text=x_label,
-                font=dict(size=font_size_label)
-            ),
-            "tickfont": dict(size=font_size_tick),
-            "showgrid": True,
-        }
-        if keep_source_order:
-            xaxis_config.update({
-                "categoryorder": "array",
-                "categoryarray": x_values
-            })
-        else:
-            xaxis_config["dtick"] = x_tick_distance
+        x_indices = np.arange(len(x_values))  # Vị trí các cột trên trục X
 
-        fig.update_layout(
-            title=dict(
-                text=title,
-                font=dict(size=font_size_title),  # Kích thước font của tiêu đề
-                x=0.5  # Căn giữa tiêu đề
-            ),
-            xaxis=xaxis_config,
-            yaxis=dict(
-                title=dict(
-                    text=y_label,
-                    font=dict(size=font_size_label)  # Kích thước font nhãn trục Y
-                ),
-                tickfont=dict(size=font_size_tick),  # Kích thước font giá trị tick trên trục Y
-                showgrid=True,
-                dtick=y_tick_distance  # Khoảng cách tick trên trục Y
-            ),
-            template="plotly_white",
-            barmode='group'  # Các bar được nhóm theo legend
-        )
+        # Khởi tạo plot
+        fig, ax = plt.subplots(figsize=(20, 12))
+        
+        # Vẽ các bar và thêm giá trị phía trên
+        for i, y in enumerate(y_values):
+            offset_x = (i - (len(y_values) - 1) / 2) * bar_width  # Điều chỉnh vị trí các nhóm cột
+            ax.bar(x_indices + offset_x, y, bar_width, label=legends[i],
+                yerr=y_stds[i] if y_stds else None, capsize=5)  # Vẽ cột và lỗi chuẩn
+            
+            # Thêm giá trị phía trên cột, hiển thị giá trị màu đỏ
+            for x, y_val in zip(x_indices + offset_x, y):
+                ax.text(x, y_val, f"{y_val:.5f}", ha='center', va='bottom', fontsize=font_size_bar_val, color='red')
+                # input(y_val)
+
+
+        # Cấu hình trục X và Y
+        ax.set_xticks(x_indices)
+        ax.set_xticklabels(x_values, fontsize=font_size_tick)
+        ax.set_xlabel(x_label, fontsize=font_size_label)
+        ax.set_ylabel(y_label, fontsize=font_size_label, labelpad=100)
+        ax.set_title(title, fontsize=font_size_title)
+        
+        # Hiển thị lưới và chú thích
+        ax.grid(axis='y', linestyle='--', alpha=0.7)
+        ax.legend(fontsize=font_size_tick)
+
+        # Lưu biểu đồ nếu cần
+        if save_plot:
+            plt.savefig(save_plot, dpi=300, bbox_inches='tight')
+            print(f"Biểu đồ đã được lưu tại: {save_plot}")
         
         # Hiển thị biểu đồ
-        fig.show()
-        
-        # Lưu biểu đồ dưới dạng HTML nếu save_plot được cung cấp
-        if save_plot:
-            # replace all space in title with underscore
-            file_name = title.replace(' ', '_')
-            file_name = f'{file_name}.html'
-            plot(fig, filename=file_name, auto_open=True)
-            print(f'The plot is saved as {file_name}')
-
-
-
+        plt.tight_layout()
+        plt.show()
 
 def main():
     util_plotter = Plotter()
