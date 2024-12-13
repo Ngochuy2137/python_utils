@@ -563,6 +563,82 @@ class Plotter:
             plot(fig, filename=file_name, auto_open=True)
             print(f'The plot is saved as {file_name}')
 
+    def plot_variable_length_line_chart(self, x_y_pairs, legends=None, title="Line Chart", x_label="X-axis", y_label="Y-axis", 
+                                        save_plot=None, font_size_title=20, font_size_label=15, font_size_tick=12):
+        """
+        Vẽ biểu đồ line chart với các cặp (x, y) có độ dài khác nhau.
+
+        Args:
+            x_y_pairs (list of tuple): Danh sách các cặp (x, y), trong đó x và y là các danh sách giá trị.
+            legends (list): Tên các đường đồ thị. Nếu None, sử dụng mặc định "Series 1", "Series 2", ...
+            title (str): Tiêu đề của biểu đồ.
+            x_label (str): Nhãn trục X.
+            y_label (str): Nhãn trục Y.
+            save_plot (str): Đường dẫn lưu file HTML. Nếu None, không lưu.
+            font_size_title (int): Kích thước font của tiêu đề.
+            font_size_label (int): Kích thước font của nhãn trục.
+            font_size_tick (int): Kích thước font của giá trị tick trên trục.
+        """
+        # Kiểm tra tính hợp lệ của đầu vào
+        if not all(isinstance(pair, tuple) and len(pair) == 2 for pair in x_y_pairs):
+            raise ValueError("x_y_pairs phải là danh sách các tuple (x, y).")
+
+        if legends is None:
+            legends = [f"Series {i+1}" for i in range(len(x_y_pairs))]
+
+        if len(legends) != len(x_y_pairs):
+            raise ValueError("The number of legends must equal the number of x_y_pairs.")
+
+        fig = go.Figure()
+
+        for (x, y), legend in zip(x_y_pairs, legends):
+            if len(x) != len(y):
+                raise ValueError(f"Cặp (x, y) với legend '{legend}' không có cùng độ dài.")
+
+            # Thêm từng đường vào biểu đồ
+            fig.add_trace(go.Scatter(
+                x=x,
+                y=y,
+                mode='lines+markers',  # Đường và marker
+                name=legend
+            ))
+
+        # Cấu hình biểu đồ
+        fig.update_layout(
+            title=dict(
+                text=title,
+                font=dict(size=font_size_title),
+                x=0.5  # Căn giữa tiêu đề
+            ),
+            xaxis=dict(
+                title=dict(
+                    text=x_label,
+                    font=dict(size=font_size_label)
+                ),
+                tickfont=dict(size=font_size_tick),
+                showgrid=True
+            ),
+            yaxis=dict(
+                title=dict(
+                    text=y_label,
+                    font=dict(size=font_size_label)
+                ),
+                tickfont=dict(size=font_size_tick),
+                showgrid=True
+            ),
+            template="plotly_white"
+        )
+
+        # Hiển thị biểu đồ
+        fig.show()
+
+        # Lưu biểu đồ dưới dạng HTML nếu cần
+        if save_plot:
+            file_name = title.replace(' ', '_') + ".html"
+            plot(fig, filename=file_name, auto_open=True)
+            print(f'The plot is saved as {file_name}')
+
+
     # def plot_bar_chart(self, x_values, y_values, legends=None, title="Bar Chart", x_label="X-axis", y_label="Y-axis", 
     #                 save_plot=None, x_tick_distance=None, y_tick_distance=None,
     #                 font_size_title=20, font_size_label=15, font_size_tick=12,
