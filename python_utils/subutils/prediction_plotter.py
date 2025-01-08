@@ -64,7 +64,7 @@ class PredictionPlotter:
             legendgroup=legendgroup  # Gán nhóm legend
         )
 
-    def create_figure(self, inputs, labels, predictions, rotate_data_whose_y_up=False, title='', font_size_note=12, show_all_as_default=False):
+    def create_figure(self, inputs, labels, predictions, rotate_data_whose_y_up=False, title='', font_size_note=10, show_all_as_default=False):
         fig = Figure()
 
         # Tạo danh sách màu sắc
@@ -87,39 +87,41 @@ class PredictionPlotter:
             pred_x, pred_y, pred_z = process_trajectory(pred_traj)
 
             # Vẽ inputs
-            fig.add_trace(self._plot_scatter(input_x, input_y, input_z, 12, 'circle-open', self.colors[i], f'Input {i+1}', legendgroup, line_width=2).update(visible=initial_visibility))
+            fig.add_trace(self._plot_scatter(input_x, input_y, input_z, 12, 'circle-open', self.colors[i], f'Input {i}', legendgroup, line_width=2).update(visible=initial_visibility))
 
             # Vẽ labels
-            fig.add_trace(self._plot_scatter(label_x, label_y, label_z, 6, 'circle', self.colors[i], f'Label {i+1}', legendgroup, line_width=1, opacity=0.5).update(visible=initial_visibility))
+            fig.add_trace(self._plot_scatter(label_x, label_y, label_z, 6, 'circle', self.colors[i], f'Label {i}', legendgroup, line_width=1, opacity=0.5).update(visible=initial_visibility))
 
             # Vẽ predictions
-            fig.add_trace(self._plot_scatter(pred_x, pred_y, pred_z, 4, 'cross', self.colors[i], f'Prediction {i+1}', legendgroup, line_width=1).update(visible=initial_visibility))
+            fig.add_trace(self._plot_scatter(pred_x, pred_y, pred_z, 4, 'cross', self.colors[i], f'Prediction {i}', legendgroup, line_width=1).update(visible=initial_visibility))
 
             # Tính điểm cuối của predictions và labels
             pred_end = np.array([pred_x[-1], pred_y[-1], pred_z[-1]])
             label_end = np.array([label_x[-1], label_y[-1], label_z[-1]])
 
-            # Thêm text "end" cho điểm cuối của predictions và labels
-            fig.add_trace(self._plot_text(pred_end[0], pred_end[1], pred_end[2], f"end (P) {i}", self.colors[i], 14, legendgroup).update(visible=initial_visibility))
-            fig.add_trace(self._plot_text(label_end[0], label_end[1], label_end[2], f"end (L) {i}", self.colors[i], 14, legendgroup).update(visible=initial_visibility))
-
             # Vẽ đường đứt đoạn nối prediction và label cuối
-            fig.add_trace(self._plot_dashed_line(pred_end, label_end, 'red', legendgroup).update(visible=initial_visibility))
+            fig.add_trace(self._plot_dashed_line(pred_end, label_end, self.colors[i], legendgroup).update(visible=initial_visibility))
 
             # Tính và hiển thị khoảng cách Euclidean giữa prediction và label cuối
             distance = np.linalg.norm(pred_end - label_end)
-            mid_point = (pred_end + label_end) / 2  # Tính điểm giữa
-            fig.add_trace(self._plot_text(mid_point[0], 
-                                        mid_point[1], 
-                                        mid_point[2], 
-                                        f"             err={distance:.2f} \
-                                        <br>input: {len(input_traj)} - label: {len(label_traj)} - pred: {len(pred_traj)}", 
-                                        "red", font_size_note, legendgroup).update(visible=initial_visibility))
+            # mid_point = (pred_end + label_end) / 2  # Tính điểm giữa
+            # fig.add_trace(self._plot_text(mid_point[0], 
+            #                             mid_point[1], 
+            #                             mid_point[2], 
+            #                             f"             err={distance:.4f} \
+            #                             <br>input: {len(input_traj)} - label: {len(label_traj)} - pred: {len(pred_traj)}", 
+            #                             "red", font_size_note, legendgroup).update(visible=initial_visibility))
+            
+            # Thêm text "end" cho điểm cuối của predictions và labels
+            fig.add_trace(self._plot_text(pred_end[0], pred_end[1], pred_end[2], f"end (P) {i} - err: {distance:.3f} \
+                                                                                <br>input:{len(input_traj)}/{len(label_traj)+1}", \
+                                                                                self.colors[i], 10, legendgroup).update(visible=initial_visibility))
+            # fig.add_trace(self._plot_text(label_end[0], label_end[1], label_end[2], f"end (L) {i}", self.colors[i], 14, legendgroup).update(visible=initial_visibility))
 
         # Cập nhật bố cục
         fig.update_layout(
             title=dict(
-                text=f"{title} - Inputs vs Labels vs Predictions",
+                text=f"{title} - Inputs vs Labels vs Predictions - IE: {distance:.3f}",
                 font=dict(size=32),
                 x=0.5
             ),
@@ -153,6 +155,101 @@ class PredictionPlotter:
             ),
         )
         return fig
+
+    # def create_figure(self, inputs=None, labels=None, predictions=None, rotate_data_whose_y_up=False, title='', font_size_note=10, show_all_as_default=False):
+    #     fig = Figure()
+
+    #     # Kiểm tra số lượng quỹ đạo từ tham số không phải None
+    #     n_trajectories = 0
+    #     if predictions is not None:
+    #         n_trajectories = len(predictions)
+    #     elif labels is not None:
+    #         n_trajectories = len(labels)
+    #     elif inputs is not None:
+    #         n_trajectories = len(inputs)
+
+    #     # Tạo danh sách màu sắc
+    #     self._generate_colors(n_trajectories)
+
+    #     # Thiết lập trạng thái hiển thị mặc định
+    #     initial_visibility = True if show_all_as_default else "legendonly"
+
+    #     for i in range(n_trajectories):
+    #         legendgroup = f'Trajectory {i+1}'  # Nhóm legend cho từng quỹ đạo
+
+    #         def process_trajectory(traj):
+    #             if rotate_data_whose_y_up:
+    #                 return traj[:, 0], -traj[:, 2], traj[:, 1]
+    #             return traj[:, 0], traj[:, 1], traj[:, 2]
+
+    #         # Xử lý và vẽ inputs nếu tồn tại
+    #         if inputs is not None:
+    #             input_traj = inputs[i]
+    #             input_x, input_y, input_z = process_trajectory(input_traj)
+    #             fig.add_trace(self._plot_scatter(input_x, input_y, input_z, 12, 'circle-open', self.colors[i], f'Input {i}', legendgroup, line_width=2).update(visible=initial_visibility))
+
+    #         # Xử lý và vẽ labels nếu tồn tại
+    #         if labels is not None:
+    #             label_traj = labels[i]
+    #             label_x, label_y, label_z = process_trajectory(label_traj)
+    #             fig.add_trace(self._plot_scatter(label_x, label_y, label_z, 6, 'circle', self.colors[i], f'Label {i}', legendgroup, line_width=1, opacity=0.5).update(visible=initial_visibility))
+
+    #         # Xử lý và vẽ predictions nếu tồn tại
+    #         if predictions is not None:
+    #             pred_traj = predictions[i]
+    #             pred_x, pred_y, pred_z = process_trajectory(pred_traj)
+    #             fig.add_trace(self._plot_scatter(pred_x, pred_y, pred_z, 4, 'cross', self.colors[i], f'Prediction {i}', legendgroup, line_width=1).update(visible=initial_visibility))
+
+    #             # Nếu cả labels và predictions tồn tại, tính và vẽ khoảng cách
+    #             if labels is not None:
+    #                 pred_end = np.array([pred_x[-1], pred_y[-1], pred_z[-1]])
+    #                 label_end = np.array([label_x[-1], label_y[-1], label_z[-1]])
+
+    #                 # Vẽ đường đứt đoạn nối prediction và label cuối
+    #                 fig.add_trace(self._plot_dashed_line(pred_end, label_end, self.colors[i], legendgroup).update(visible=initial_visibility))
+
+    #                 # Tính và hiển thị khoảng cách Euclidean giữa prediction và label cuối
+    #                 distance = np.linalg.norm(pred_end - label_end)
+    #                 fig.add_trace(self._plot_text(pred_end[0], pred_end[1], pred_end[2], f"end (P) {i} - err: {distance:.3f} ", self.colors[i], 10, legendgroup).update(visible=initial_visibility))
+
+    #     # Cập nhật bố cục
+    #     fig.update_layout(
+    #         title=dict(
+    #             text=f"{title} - Inputs vs Labels vs Predictions",
+    #             font=dict(size=32),
+    #             x=0.5
+    #         ),
+    #         legend=dict(
+    #             font=dict(size=16),
+    #             title=dict(text="Legend Title", font=dict(size=18))
+    #         ),
+    #         scene=dict(
+    #             xaxis=dict(
+    #                 dtick=0.25,
+    #                 title=dict(
+    #                     text="X Axis",
+    #                     font=dict(size=16)
+    #                 )
+    #             ),
+    #             yaxis=dict(
+    #                 dtick=0.25,
+    #                 title=dict(
+    #                     text="Y Axis",
+    #                     font=dict(size=16)
+    #                 )
+    #             ),
+    #             zaxis=dict(
+    #                 dtick=0.25,
+    #                 title=dict(
+    #                     text="Z Axis",
+    #                     font=dict(size=16)
+    #                 )
+    #             ),
+    #             aspectmode='data',
+    #         ),
+    #     )
+    #     return fig
+
 
     def plot_predictions(self, inputs, labels, predictions, rotate_data_whose_y_up=False, title='', save_plot=False, font_size_note=12, show_all_as_default=True):
         fig = self.create_figure(inputs, labels, predictions, rotate_data_whose_y_up, title=title, font_size_note=font_size_note, show_all_as_default=show_all_as_default)

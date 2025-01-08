@@ -38,6 +38,7 @@ class Plotter:
                                                 title=title,
                                                 save_plot=save_plot, font_size_note=font_size_note,
                                                 show_all_as_default=show_all_as_default)
+        
     # def plot_samples(self, samples_simbols_list, title=''):
     #     # shuffle samples_simbols_list
     #     random.shuffle(samples_simbols_list)
@@ -97,8 +98,7 @@ class Plotter:
     #     plt.title('3D samples ' + title, fontsize=25)
     #     plt.show()
 
-    def plot_samples(self, samples, title='', rotate_data_whose_y_up=False, plot_all=False, shuffle=False):
-        print('Plotting samples... 111')
+    def plot_trajectory_dataset_matplotlib(self, samples, title='', rotate_data_whose_y_up=False, plot_all=False, shuffle=False):
         figure = plt.figure(num=1, figsize=(12, 12))
         ax = figure.add_subplot(111, projection='3d')
 
@@ -168,7 +168,7 @@ class Plotter:
         plt.title('3D samples ' + title, fontsize=25)
         plt.show()
     
-    def plot_trajectory_dataset(self, trajectories, title='', rotate_data_whose_y_up=False, save_plot=False):
+    def plot_trajectory_dataset_plotly(self, trajectories, title='', rotate_data_whose_y_up=False, save_plot=False):
         fig = Figure()
 
         # Tạo một danh sách các màu sắc
@@ -203,7 +203,7 @@ class Plotter:
                     color=colors[i],  # Màu của đường nối
                     width=2
                 ),
-                name=f'Trajectory {i+1}'  # Đặt tên cho quỹ đạo
+                name=f'Trajectory {i}'  # Đặt tên cho quỹ đạo
             ))
 
             # Thêm chữ "end" bên cạnh điểm cuối
@@ -427,9 +427,9 @@ class Plotter:
         self.pub.publish(marker_array)
         rospy.loginfo("All segments, title, and end markers published to RViz.")
 
-    def plot_line_chart(self, x_values, y_values, legends=None, title="Line Chart", x_label="X-axis", y_label="Y-axis", 
+    def plot_line_chart(self, y_values, x_values=None, legends=None, title="Line Chart", x_label="X-axis", y_label="Y-axis", 
                     save_plot=None, x_tick_distance=None, y_tick_distance=None,
-                    font_size_title=20, font_size_label=15, font_size_tick=12,
+                    font_size_title=35, font_size_label=35, font_size_tick=25,
                     keep_source_order=False, y_stds=None, std_display_mode="fill"):
         """
         Vẽ biểu đồ line chart với nhiều đường đồ thị, tùy chọn khoảng cách tick và lưu dưới dạng file HTML.
@@ -451,7 +451,10 @@ class Plotter:
             y_stds (list of list): Độ lệch chuẩn tương ứng với y_values. Nếu None, không vẽ sai số.
             std_display_mode (str): Cách hiển thị độ lệch chuẩn: "bar" (thanh) hoặc "fill" (đổ bóng). Mặc định là "fill".
         """
-        if not all(len(x_values) == len(y) for y in y_values):
+        if x_values is None:
+            # create x_values if not provided with np.arange
+            x_values = np.arange(len(y_values[0]))
+        elif not all(len(x_values) == len(y) for y in y_values):
             raise ValueError("Độ dài của x_values phải bằng với từng chuỗi trong y_values.")
         
         if legends is None:
@@ -500,7 +503,8 @@ class Plotter:
                         name=f"{legend} - Std",
                         showlegend=False,
                         hoverinfo="skip",
-                        fill='tonexty'  # Đổ bóng
+                        fill='tonexty',  # Đổ bóng
+                        # fillcolor="rgba(255, 0, 0, 0.3)"
                     ))
                 elif std_display_mode == "bar":  # Hiển thị bar
                     fig.add_trace(go.Bar(
@@ -539,6 +543,11 @@ class Plotter:
                 font=dict(size=font_size_title),  # Kích thước font của tiêu đề
                 x=0.5  # Căn giữa tiêu đề
             ),
+            legend=dict(
+                font=dict(
+                    size=35  # Kích thước font của legend
+                )
+            ),
             xaxis=xaxis_config,
             yaxis=dict(
                 title=dict(
@@ -564,7 +573,7 @@ class Plotter:
             print(f'The plot is saved as {file_name}')
 
     def plot_variable_length_line_chart(self, x_y_pairs, legends=None, title="Line Chart", x_label="X-axis", y_label="Y-axis", 
-                                        save_plot=None, font_size_title=20, font_size_label=15, font_size_tick=12):
+                                        save_plot=None, font_size_title=40, font_size_label=30, font_size_tick=25):
         """
         Vẽ biểu đồ line chart với các cặp (x, y) có độ dài khác nhau.
 
@@ -847,6 +856,55 @@ class Plotter:
         # Hiển thị biểu đồ
         plt.tight_layout()
         plt.show()
+    
+    def draw_histogram(self, data, bin_width, x_label, y_label, title, start_x=None, end_x=None):
+        # Thiết lập kích thước cửa sổ ngay khi bắt đầu
+        fig, ax = plt.subplots(figsize=(20, 12))
+        
+        # Tính min và max của dữ liệu
+        min_value = min(data)
+        max_value = max(data)
+
+        # Tạo các bin theo bin_width
+        bins = [min_value + i * bin_width for i in range(int((max_value - min_value) / bin_width) + 1)]
+
+        # Tính bin start
+        if start_x is not None and start_x < min_value:
+            bin_start = np.floor(start_x / bin_width) * bin_width
+        else:
+            bin_start = np.floor(min_value / bin_width) * bin_width
+
+        # Tính bin end
+        if end_x is not None and end_x > max_value:
+            bin_end = np.ceil(end_x / bin_width) * bin_width + bin_width
+        else:
+            bin_end = np.ceil(max_value / bin_width) * bin_width + bin_width
+
+        bins = np.arange(bin_start, bin_end, bin_width)
+
+        # Vẽ histogram
+        ax.hist(data, bins=bins, edgecolor='black', alpha=0.7)
+
+        # Ghi giá trị y lên từng bar
+        for i in range(len(bins) - 1):
+            count = sum(1 for x in data if bins[i] <= x < bins[i + 1])  # Tính tần suất của mỗi bin
+            ax.text((bins[i] + bins[i + 1]) / 2, count, str(count), ha='center', va='bottom', fontsize=10, color='red')
+
+        # Tùy chỉnh trục x
+        if start_x is not None and end_x is not None:
+            ax.set_xlim(start_x, end_x)
+
+        ax.set_xticks(bins)
+
+        # Thiết lập các thuộc tính của biểu đồ
+        ax.set_xlabel(x_label, fontsize=14, labelpad=20)
+        ax.set_ylabel(y_label, fontsize=14, labelpad=20)
+        ax.set_title(title + f' - Total data number: {len(data)}', fontsize=20, pad=30)
+        ax.grid(True)
+
+        # Hiển thị biểu đồ
+        plt.show()
+
 
 def main():
     util_plotter = Plotter()

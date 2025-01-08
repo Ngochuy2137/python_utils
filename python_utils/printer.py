@@ -41,3 +41,11 @@ class Printer:
             print('\033[45m' + text + '\033[0m')
         else:
             print('\033[95m' + text + '\033[0m')
+
+    def print_pink(self, text, background=False, enable=True):
+        if not enable:
+            return
+        if background:
+            print('\033[46m' + text + '\033[0m')
+        else:
+            print('\033[96m' + text + '\033[0m')
