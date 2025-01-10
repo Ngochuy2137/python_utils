@@ -86,14 +86,35 @@ class PredictionPlotter:
             label_x, label_y, label_z = process_trajectory(label_traj)
             pred_x, pred_y, pred_z = process_trajectory(pred_traj)
 
+            # Tính khoảng cách giữa các điểm label và predict tương ứng
+            distances = [
+                np.linalg.norm(np.array([px, py, pz]) - np.array([lx, ly, lz]))
+                for px, py, pz, lx, ly, lz in zip(pred_x, pred_y, pred_z, label_x, label_y, label_z)
+            ]
+
+            # Tạo thông tin hover bổ sung cho predictions
+            pred_hover = [
+                f"PRED<br>  ID: {idx+1}<br>  X: {px:.2f}<br>  Y: {py:.2f}<br>  Z: {pz:.2f}<br>  err: {dist:.4f}"
+                for idx, (px, py, pz, dist) in enumerate(zip(pred_x, pred_y, pred_z, distances))
+            ]
+
+            # Tạo thông tin hover bổ sung cho labels
+            label_hover = [
+                f"LAB<br>  ID: {idx+1}<br>  X: {lx:.2f}<br>  Y: {ly:.2f}<br>  Z: {lz:.2f}<br>  err: {dist:.4f}"
+                for idx, (lx, ly, lz, dist) in enumerate(zip(label_x, label_y, label_z, distances))
+            ]
+
             # Vẽ inputs
-            fig.add_trace(self._plot_scatter(input_x, input_y, input_z, 12, 'circle-open', self.colors[i], f'Input {i}', legendgroup, line_width=2).update(visible=initial_visibility))
+            fig.add_trace(self._plot_scatter(input_x, input_y, input_z, 12, 'circle-open', self.colors[i], f'Input {i}', legendgroup, line_width=2)
+                        .update(visible=initial_visibility))
 
-            # Vẽ labels
-            fig.add_trace(self._plot_scatter(label_x, label_y, label_z, 6, 'circle', self.colors[i], f'Label {i}', legendgroup, line_width=1, opacity=0.5).update(visible=initial_visibility))
+            # Vẽ labels với hovertext
+            fig.add_trace(self._plot_scatter(label_x, label_y, label_z, 6, 'circle', self.colors[i], f'Label {i}', legendgroup, line_width=1, opacity=0.5)
+                        .update(visible=initial_visibility, hovertext=label_hover, hoverinfo='text'))
 
-            # Vẽ predictions
-            fig.add_trace(self._plot_scatter(pred_x, pred_y, pred_z, 4, 'cross', self.colors[i], f'Prediction {i}', legendgroup, line_width=1).update(visible=initial_visibility))
+            # Vẽ predictions với hovertext
+            fig.add_trace(self._plot_scatter(pred_x, pred_y, pred_z, 4, 'cross', self.colors[i], f'Prediction {i}', legendgroup, line_width=1)
+                        .update(visible=initial_visibility, hovertext=pred_hover, hoverinfo='text'))
 
             # Tính điểm cuối của predictions và labels
             pred_end = np.array([pred_x[-1], pred_y[-1], pred_z[-1]])
@@ -104,24 +125,15 @@ class PredictionPlotter:
 
             # Tính và hiển thị khoảng cách Euclidean giữa prediction và label cuối
             distance = np.linalg.norm(pred_end - label_end)
-            # mid_point = (pred_end + label_end) / 2  # Tính điểm giữa
-            # fig.add_trace(self._plot_text(mid_point[0], 
-            #                             mid_point[1], 
-            #                             mid_point[2], 
-            #                             f"             err={distance:.4f} \
-            #                             <br>input: {len(input_traj)} - label: {len(label_traj)} - pred: {len(pred_traj)}", 
-            #                             "red", font_size_note, legendgroup).update(visible=initial_visibility))
-            
-            # Thêm text "end" cho điểm cuối của predictions và labels
-            fig.add_trace(self._plot_text(pred_end[0], pred_end[1], pred_end[2], f"end (P) {i} - err: {distance:.3f} \
-                                                                                <br>input:{len(input_traj)}/{len(label_traj)+1}", \
+
+            # Thêm text "end" cho điểm cuối của predictions
+            fig.add_trace(self._plot_text(pred_end[0], pred_end[1], pred_end[2], f"end (P) {i} - err: {distance:.3f}", \
                                                                                 self.colors[i], 10, legendgroup).update(visible=initial_visibility))
-            # fig.add_trace(self._plot_text(label_end[0], label_end[1], label_end[2], f"end (L) {i}", self.colors[i], 14, legendgroup).update(visible=initial_visibility))
 
         # Cập nhật bố cục
         fig.update_layout(
             title=dict(
-                text=f"{title} - Inputs vs Labels vs Predictions - IE: {distance:.3f}",
+                text=f"{title} - Inputs vs Labels vs Predictions",
                 font=dict(size=32),
                 x=0.5
             ),
