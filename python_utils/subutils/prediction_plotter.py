@@ -75,7 +75,7 @@ class PredictionPlotter:
         initial_visibility = True if show_all_as_default else "legendonly"
 
         for i, (input_traj, label_traj, pred_traj) in enumerate(zip(inputs, labels, predictions)):
-            legendgroup = f'Trajectory {i+1}'  # Nhóm legend cho từng quỹ đạo
+            # legendgroup = f'Trajectory {i+1}'  # Nhóm legend cho từng quỹ đạo
 
             def process_trajectory(traj):
                 if rotate_data_whose_y_up:
@@ -105,15 +105,15 @@ class PredictionPlotter:
             ]
 
             # Vẽ inputs
-            fig.add_trace(self._plot_scatter(input_x, input_y, input_z, 12, 'circle-open', self.colors[i], f'Input {i}', legendgroup, line_width=2)
+            fig.add_trace(self._plot_scatter(input_x, input_y, input_z, 12, 'circle-open', self.colors[i], name=f'Input {i}', legendgroup=f'Input {i}', line_width=2)
                         .update(visible=initial_visibility))
 
             # Vẽ labels với hovertext
-            fig.add_trace(self._plot_scatter(label_x, label_y, label_z, 6, 'circle', self.colors[i], f'Label {i}', legendgroup, line_width=1, opacity=0.5)
+            fig.add_trace(self._plot_scatter(label_x, label_y, label_z, 6, 'circle', self.colors[i], name=f'Label {i}', legendgroup=f'Label {i}', line_width=1, opacity=0.5)
                         .update(visible=initial_visibility, hovertext=label_hover, hoverinfo='text'))
 
             # Vẽ predictions với hovertext
-            fig.add_trace(self._plot_scatter(pred_x, pred_y, pred_z, 4, 'cross', self.colors[i], f'Prediction {i}', legendgroup, line_width=1)
+            fig.add_trace(self._plot_scatter(pred_x, pred_y, pred_z, 4, 'cross', self.colors[i], name=f'Prediction {i}', legendgroup=f'Prediction {i}', line_width=1)
                         .update(visible=initial_visibility, hovertext=pred_hover, hoverinfo='text'))
 
             # Tính điểm cuối của predictions và labels
@@ -121,14 +121,15 @@ class PredictionPlotter:
             label_end = np.array([label_x[-1], label_y[-1], label_z[-1]])
 
             # Vẽ đường đứt đoạn nối prediction và label cuối
-            fig.add_trace(self._plot_dashed_line(pred_end, label_end, self.colors[i], legendgroup).update(visible=initial_visibility))
+            fig.add_trace(self._plot_dashed_line(pred_end, label_end, self.colors[i], legendgroup=f'end {i}')
+                        .update(visible=initial_visibility, showlegend=True, name=f'end (P) {i}'))
 
             # Tính và hiển thị khoảng cách Euclidean giữa prediction và label cuối
             distance = np.linalg.norm(pred_end - label_end)
 
             # Thêm text "end" cho điểm cuối của predictions
-            fig.add_trace(self._plot_text(pred_end[0], pred_end[1], pred_end[2], f"end (P) {i} - err: {distance:.3f}", \
-                                                                                self.colors[i], 10, legendgroup).update(visible=initial_visibility))
+            fig.add_trace(self._plot_text(pred_end[0], pred_end[1], pred_end[2], f"end (P) {i} - err: {distance:.3f}", self.colors[i], 10, legendgroup=f'end {i}')
+                        .update(visible=initial_visibility, showlegend=True, name=f'<br>'))
 
         # Cập nhật bố cục
         fig.update_layout(
