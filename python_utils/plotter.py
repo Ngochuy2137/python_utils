@@ -790,8 +790,76 @@ class Plotter:
     #         plot(fig, filename=file_name, auto_open=True)
     #         print(f'The plot is saved as {file_name}')
 
+    # def plot_bar_chart(self, x_values, y_values, legends=None, title="Bar Chart", x_label="X-axis", y_label="Y-axis", 
+    #                save_plot=None, font_size_title=20, font_size_label=15, font_size_tick=12, font_size_bar_val=12, y_stds=None, bar_width=0.8):
+    #     """
+    #     Vẽ biểu đồ bar chart với nhiều cột, tùy chọn vẽ standard deviation (đoạn thẳng có chắn 2 đầu).
+        
+    #     Args:
+    #         x_values (list): Danh sách giá trị trên trục X.
+    #         y_values (list of list): Danh sách các chuỗi giá trị trên trục Y.
+    #         legends (list): Tên các chuỗi dữ liệu. Nếu None, sử dụng mặc định "Series 1", "Series 2", ...
+    #         title (str): Tiêu đề của biểu đồ.
+    #         x_label (str): Nhãn trục X.
+    #         y_label (str): Nhãn trục Y.
+    #         save_plot (str): Đường dẫn lưu file PNG. Nếu None, không lưu.
+    #         font_size_title (int): Kích thước font của tiêu đề.
+    #         font_size_label (int): Kích thước font của nhãn trục.
+    #         font_size_tick (int): Kích thước font của giá trị tick trên trục.
+    #         y_stds (list of list): Độ lệch chuẩn tương ứng với y_values. Nếu None, không vẽ sai số.
+    #         bar_width (float): Độ rộng của bar (từ 0.1 đến 1). Mặc định là 0.8.
+    #     """
+    #     if legends is None:
+    #         # legends = [f"Series {i+1}" for i in range(len(y_values))]
+    #         legends = ['']
+        
+    #     # Kiểm tra độ dài dữ liệu
+    #     if not all(len(x_values) == len(y) for y in y_values):
+    #         raise ValueError("Độ dài của x_values phải bằng với từng chuỗi trong y_values.")
+        
+    #     if y_stds is not None and len(y_stds) != len(y_values):
+    #         raise ValueError("The number of y_stds must equal the number of y_values.")
+        
+    #     x_indices = np.arange(len(x_values))  # Vị trí các cột trên trục X
+
+    #     # Khởi tạo plot
+    #     fig, ax = plt.subplots(figsize=(20, 12))
+        
+    #     # Vẽ các bar và thêm giá trị phía trên
+    #     for i, y in enumerate(y_values):
+    #         offset_x = (i - (len(y_values) - 1) / 2) * bar_width  # Điều chỉnh vị trí các nhóm cột
+    #         ax.bar(x_indices + offset_x, y, bar_width, label=legends[i],
+    #             yerr=y_stds[i] if y_stds else None, capsize=5)  # Vẽ cột và lỗi chuẩn
+            
+    #         # Thêm giá trị phía trên cột, hiển thị giá trị màu đỏ
+    #         for x, y_val in zip(x_indices + offset_x, y):
+    #             ax.text(x, y_val, f"{y_val:.5f}", ha='center', va='bottom', fontsize=font_size_bar_val, color='red')
+    #             # input(y_val)
+
+
+    #     # Cấu hình trục X và Y
+    #     ax.set_xticks(x_indices)
+    #     ax.set_xticklabels(x_values, fontsize=font_size_tick)
+    #     ax.set_xlabel(x_label, fontsize=font_size_label)
+    #     ax.set_ylabel(y_label, fontsize=font_size_label, labelpad=50)
+    #     ax.set_title(title, fontsize=font_size_title)
+        
+    #     # Hiển thị lưới và chú thích
+    #     ax.grid(axis='y', linestyle='--', alpha=0.7)
+    #     ax.legend(fontsize=font_size_tick)
+
+    #     # Lưu biểu đồ nếu cần
+    #     if save_plot:
+    #         plt.savefig(save_plot, dpi=300, bbox_inches='tight')
+    #         print(f"Biểu đồ đã được lưu tại: {save_plot}")
+        
+    #     # Hiển thị biểu đồ
+    #     plt.tight_layout()
+    #     plt.show()
+
     def plot_bar_chart(self, x_values, y_values, legends=None, title="Bar Chart", x_label="X-axis", y_label="Y-axis", 
-                   save_plot=None, font_size_title=20, font_size_label=15, font_size_tick=12, font_size_bar_val=12, y_stds=None, bar_width=0.8):
+                   save_plot=None, font_size_title=20, font_size_label=15, font_size_tick=12, font_size_bar_val=12, 
+                   y_stds=None, bar_width=0.8, y_lim=None):
         """
         Vẽ biểu đồ bar chart với nhiều cột, tùy chọn vẽ standard deviation (đoạn thẳng có chắn 2 đầu).
         
@@ -808,9 +876,9 @@ class Plotter:
             font_size_tick (int): Kích thước font của giá trị tick trên trục.
             y_stds (list of list): Độ lệch chuẩn tương ứng với y_values. Nếu None, không vẽ sai số.
             bar_width (float): Độ rộng của bar (từ 0.1 đến 1). Mặc định là 0.8.
+            y_lim (tuple): Giới hạn trục Y dưới dạng (min, max). Nếu None, tự động điều chỉnh.
         """
         if legends is None:
-            # legends = [f"Series {i+1}" for i in range(len(y_values))]
             legends = ['']
         
         # Kiểm tra độ dài dữ liệu
@@ -834,16 +902,18 @@ class Plotter:
             # Thêm giá trị phía trên cột, hiển thị giá trị màu đỏ
             for x, y_val in zip(x_indices + offset_x, y):
                 ax.text(x, y_val, f"{y_val:.5f}", ha='center', va='bottom', fontsize=font_size_bar_val, color='red')
-                # input(y_val)
-
 
         # Cấu hình trục X và Y
         ax.set_xticks(x_indices)
         ax.set_xticklabels(x_values, fontsize=font_size_tick)
         ax.set_xlabel(x_label, fontsize=font_size_label)
-        ax.set_ylabel(y_label, fontsize=font_size_label, labelpad=100)
+        ax.set_ylabel(y_label, fontsize=font_size_label, labelpad=50)
         ax.set_title(title, fontsize=font_size_title)
-        
+
+        # Thiết lập giới hạn trục Y nếu được chỉ định
+        if y_lim is not None:
+            ax.set_ylim(y_lim)
+
         # Hiển thị lưới và chú thích
         ax.grid(axis='y', linestyle='--', alpha=0.7)
         ax.legend(fontsize=font_size_tick)
@@ -852,10 +922,11 @@ class Plotter:
         if save_plot:
             plt.savefig(save_plot, dpi=300, bbox_inches='tight')
             print(f"Biểu đồ đã được lưu tại: {save_plot}")
-        
+
         # Hiển thị biểu đồ
         plt.tight_layout()
         plt.show()
+
     
     def draw_histogram(self, data, bin_width, x_label, y_label, title, start_x=None, end_x=None):
         # Thiết lập kích thước cửa sổ ngay khi bắt đầu

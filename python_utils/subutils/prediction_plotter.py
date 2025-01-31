@@ -93,27 +93,32 @@ class PredictionPlotter:
             ]
 
             # Tạo thông tin hover bổ sung cho predictions
+            in_hover = [
+                f"IN<br>  ID: {idx}<br>  X: {px:.2f}<br>  Y: {py:.2f}<br>  Z: {pz:.2f}"
+                for idx, (px, py, pz) in enumerate(zip(input_x, input_y, input_z))
+            ]
+
             pred_hover = [
-                f"PRED<br>  ID: {idx+1}<br>  X: {px:.2f}<br>  Y: {py:.2f}<br>  Z: {pz:.2f}<br>  err: {dist:.4f}"
+                f"PRED<br>  ID: {idx}<br>  X: {px:.2f}<br>  Y: {py:.2f}<br>  Z: {pz:.2f}<br>  err: {dist:.4f}"
                 for idx, (px, py, pz, dist) in enumerate(zip(pred_x, pred_y, pred_z, distances))
             ]
 
             # Tạo thông tin hover bổ sung cho labels
             label_hover = [
-                f"LAB<br>  ID: {idx+1}<br>  X: {lx:.2f}<br>  Y: {ly:.2f}<br>  Z: {lz:.2f}<br>  err: {dist:.4f}"
+                f"LAB<br>  ID: {idx}<br>  X: {lx:.2f}<br>  Y: {ly:.2f}<br>  Z: {lz:.2f}<br>  err: {dist:.4f}"
                 for idx, (lx, ly, lz, dist) in enumerate(zip(label_x, label_y, label_z, distances))
             ]
 
             # Vẽ inputs
-            fig.add_trace(self._plot_scatter(input_x, input_y, input_z, 12, 'circle-open', self.colors[i], name=f'Input {i}', legendgroup=f'Input {i}', line_width=2)
-                        .update(visible=initial_visibility))
+            fig.add_trace(self._plot_scatter(input_x, input_y, input_z, 12, 'circle-open', self.colors[i], name=f'Input {i} ({len(input_x)})', legendgroup=f'Input {i}', line_width=2)
+                        .update(visible=initial_visibility, hovertext=in_hover, hoverinfo='text'))
 
             # Vẽ labels với hovertext
-            fig.add_trace(self._plot_scatter(label_x, label_y, label_z, 6, 'circle', self.colors[i], name=f'Label {i}', legendgroup=f'Label {i}', line_width=1, opacity=0.5)
+            fig.add_trace(self._plot_scatter(label_x, label_y, label_z, 6, 'circle', self.colors[i], name=f'Label {i} ({len(label_x)})', legendgroup=f'Label {i}', line_width=1, opacity=0.5)
                         .update(visible=initial_visibility, hovertext=label_hover, hoverinfo='text'))
 
             # Vẽ predictions với hovertext
-            fig.add_trace(self._plot_scatter(pred_x, pred_y, pred_z, 4, 'cross', self.colors[i], name=f'Prediction {i}', legendgroup=f'Prediction {i}', line_width=1)
+            fig.add_trace(self._plot_scatter(pred_x, pred_y, pred_z, 4, 'cross', self.colors[i], name=f'Prediction {i} ({len(pred_x)})', legendgroup=f'Prediction {i}', line_width=1)
                         .update(visible=initial_visibility, hovertext=pred_hover, hoverinfo='text'))
 
             # Tính điểm cuối của predictions và labels
