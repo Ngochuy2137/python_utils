@@ -1,7 +1,6 @@
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
-import rospy
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point
 from std_msgs.msg import ColorRGBA
@@ -13,7 +12,7 @@ import plotly.graph_objects as go
 
 from .subutils.prediction_plotter import PredictionPlotter
 class Plotter:
-    def __init__(self, topic_name='plotter/visualization_marker'):
+    def __init__(self, ):
         self.colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'orange', 'purple', 'pink', 'brown', 'gray']
         self.simbol = ['o', '+', 'x', 's', 'p', 'h', 'd', 'v', '^', '<', '>', '1', '2', '3', '4', '8']
         self.colors_rviz = [
@@ -28,7 +27,6 @@ class Plotter:
             ColorRGBA(0.5, 0.0, 1.0, 1.0),  # Purple
             ColorRGBA(0.0, 0.5, 1.0, 1.0)   # Light Blue
         ]
-        self.pub = rospy.Publisher(topic_name, MarkerArray, queue_size=1)
         self.last_marker_id = 0
         self.plotter_plotply = PredictionPlotter()
 
@@ -325,7 +323,9 @@ class Plotter:
         plt.title('3D Predictions ' + title, fontsize=18)
         plt.show()
 
-    def plot_samples_rviz(self, segments_plot, title, frame_id='world'):
+    def plot_samples_rviz(self, segments_plot, title, topic_name, frame_id='world'):
+        import rospy
+        self.pub = rospy.Publisher(topic_name, MarkerArray, queue_size=1)
         marker_array = MarkerArray()  # Tạo một MarkerArray để chứa tất cả các marker
         marker_id = 0  # ID của marker, sẽ tăng dần để đảm bảo mỗi marker là duy nhất
         color_index = 1  # Bỏ qua màu đỏ (0) để tránh trùng màu 'o'
