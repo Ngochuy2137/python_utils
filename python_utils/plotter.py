@@ -1,9 +1,6 @@
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
-from visualization_msgs.msg import Marker, MarkerArray
-from geometry_msgs.msg import Point
-from std_msgs.msg import ColorRGBA
 import random
 from plotly.graph_objects import Figure, Scatter3d
 from plotly.offline import plot
@@ -15,18 +12,6 @@ class Plotter:
     def __init__(self, ):
         self.colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'orange', 'purple', 'pink', 'brown', 'gray']
         self.simbol = ['o', '+', 'x', 's', 'p', 'h', 'd', 'v', '^', '<', '>', '1', '2', '3', '4', '8']
-        self.colors_rviz = [
-            ColorRGBA(1.0, 0.0, 0.0, 1.0),  # Red
-            ColorRGBA(0.0, 1.0, 0.0, 1.0),  # Green
-            ColorRGBA(1.0, 1.0, 0.0, 1.0),  # Yellow
-            ColorRGBA(1.0, 0.0, 1.0, 1.0),  # Magenta
-            ColorRGBA(0.0, 1.0, 1.0, 1.0),  # Cyan
-            ColorRGBA(0.5, 0.5, 0.5, 1.0),  # Gray
-            ColorRGBA(1.0, 0.5, 0.0, 1.0),  # Orange
-            ColorRGBA(0.0, 0.0, 1.0, 1.0),  # Blue
-            ColorRGBA(0.5, 0.0, 1.0, 1.0),  # Purple
-            ColorRGBA(0.0, 0.5, 1.0, 1.0)   # Light Blue
-        ]
         self.last_marker_id = 0
         self.plotter_plotply = PredictionPlotter()
 
@@ -325,6 +310,21 @@ class Plotter:
 
     def plot_samples_rviz(self, segments_plot, title, topic_name, frame_id='world'):
         import rospy
+        from visualization_msgs.msg import Marker, MarkerArray
+        from geometry_msgs.msg import Point
+        from std_msgs.msg import ColorRGBA
+        self.colors_rviz = [
+            ColorRGBA(1.0, 0.0, 0.0, 1.0),  # Red
+            ColorRGBA(0.0, 1.0, 0.0, 1.0),  # Green
+            ColorRGBA(1.0, 1.0, 0.0, 1.0),  # Yellow
+            ColorRGBA(1.0, 0.0, 1.0, 1.0),  # Magenta
+            ColorRGBA(0.0, 1.0, 1.0, 1.0),  # Cyan
+            ColorRGBA(0.5, 0.5, 0.5, 1.0),  # Gray
+            ColorRGBA(1.0, 0.5, 0.0, 1.0),  # Orange
+            ColorRGBA(0.0, 0.0, 1.0, 1.0),  # Blue
+            ColorRGBA(0.5, 0.0, 1.0, 1.0),  # Purple
+            ColorRGBA(0.0, 0.5, 1.0, 1.0)   # Light Blue
+        ]
         self.pub = rospy.Publisher(topic_name, MarkerArray, queue_size=1)
         marker_array = MarkerArray()  # Tạo một MarkerArray để chứa tất cả các marker
         marker_id = 0  # ID của marker, sẽ tăng dần để đảm bảo mỗi marker là duy nhất
