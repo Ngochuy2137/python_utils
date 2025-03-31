@@ -1,26 +1,24 @@
 import os
 import re
+import glob
 
-def find_directories_with_keyword(directory, keyword):
+def find_folders_with_keyword(directory, keyword, recursive=True):
     """
-    Tìm kiếm các thư mục trong một đường dẫn chứa từ khóa trong tên 
-    (không phân biệt chữ hoa/chữ thường, tìm cả chuỗi con).
+    Tìm thư mục có chứa từ khóa trong tên (không phân biệt hoa/thường).
 
     Args:
-        directory (str): Đường dẫn thư mục gốc để tìm kiếm.
-        keyword (str): Từ khóa cần tìm trong tên thư mục.
+        directory (str): Thư mục gốc.
+        keyword (str): Từ khóa cần tìm.
+        recursive (bool): True nếu muốn tìm trong các thư mục con.
 
     Returns:
-        list: Danh sách các đường dẫn thư mục có chứa từ khóa.
+        list: Danh sách các thư mục phù hợp.
     """
-    matching_paths = []
-    keyword_lower = keyword.lower()  # Chuyển từ khóa về chữ thường
-    for root, dirs, files in os.walk(directory):
-        for dir_name in dirs:
-            # So sánh không phân biệt chữ hoa/chữ thường, tìm chuỗi con
-            if keyword_lower in dir_name.lower():
-                matching_paths.append(os.path.join(root, dir_name))
-    return matching_paths
+    pattern = '**/*' if recursive else '*'
+    paths = glob.glob(os.path.join(directory, pattern), recursive=recursive)
+    keyword_lower = keyword.lower()
+    
+    return [p for p in paths if os.path.isdir(p) and keyword_lower in os.path.basename(p).lower()]
 
 # def list_subfolders(root_path, only_folder_name=False):
 #     """
