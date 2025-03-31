@@ -20,6 +20,25 @@ def find_folders_with_keyword(directory, keyword, recursive=True):
     
     return [p for p in paths if os.path.isdir(p) and keyword_lower in os.path.basename(p).lower()]
 
+def find_files_with_keyword(directory, keyword, recursive=True):
+    """
+    Tìm file trong thư mục (và các thư mục con nếu recursive=True) có chứa từ khóa trong tên file.
+    Không phân biệt chữ hoa/thường.
+
+    Args:
+        directory (str): Thư mục gốc để tìm kiếm.
+        keyword (str): Từ khóa cần tìm trong tên file.
+        recursive (bool): True nếu tìm cả trong thư mục con.
+
+    Returns:
+        list: Danh sách đường dẫn tới các file khớp.
+    """
+    pattern = '**/*' if recursive else '*'
+    paths = glob.glob(os.path.join(directory, pattern), recursive=recursive)
+    keyword_lower = keyword.lower()
+    
+    return [p for p in paths if os.path.isfile(p) and keyword_lower in os.path.basename(p).lower()]
+
 # def list_subfolders(root_path, only_folder_name=False):
 #     """
 #     Lấy danh sách các thư mục con của root_path.
