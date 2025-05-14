@@ -15,7 +15,7 @@ class Plotter:
         self.last_marker_id = 0
         self.plotter_plotply = PredictionPlotter()
 
-    def plot_predictions_plotly(self, inputs, labels, predictions, title='', rotate_data_whose_y_up=True, save_plot=False, font_size_note=12, show_all_as_default=True):
+    def plot_predictions_plotly(self, inputs, labels, predictions, title='', rotate_data_whose_y_up=False, save_plot=False, font_size_note=12, show_all_as_default=True):
         self.plotter_plotply.plot_predictions(inputs=inputs, labels=labels, predictions=predictions, 
                                                 rotate_data_whose_y_up=rotate_data_whose_y_up, 
                                                 title=title,
@@ -292,7 +292,7 @@ class Plotter:
         mid_point = (actual_point + predicted_point) / 2
         ax.text(mid_point[0], mid_point[1], mid_point[2], f'{distance:.2f}', color='red', fontsize=20)  # Change fontsize here
 
-    def plot_predictions(self, predictions, test_labels, lim_plot_num=None, rotate_data_whose_y_up=False, title=''):
+    def plot_predictions_plt(self, predictions, test_labels, lim_plot_num=None, rotate_data_whose_y_up=False, title=''):
         if lim_plot_num:
             predictions = predictions[:lim_plot_num]
             test_labels = test_labels[:lim_plot_num]
