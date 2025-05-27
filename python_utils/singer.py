@@ -29,7 +29,7 @@ def warn_beep(iter):
         # nghỉ 0.5 giây giữa các tiếng beep, không dùng rospy
         time.sleep(0.5)
 
-def speak_espeak(text: str, speed=100, pitch=50, volume=500, voice='en+f3') -> None:
+def speak_espeak(text: str, speed=100, pitch=50, volume=500, voice='en-us') -> None:
     # espeak --voices to check voice list
     subprocess.run([
         'espeak',
