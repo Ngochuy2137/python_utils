@@ -81,31 +81,39 @@ class Plotter:
     #     plt.title('3D samples ' + title, fontsize=25)
     #     plt.show()
 
-    def plot_trajectory_dataset_matplotlib(self, samples, title='', rotate_data_whose_y_up=False, plot_all=False, shuffle=False):
-        figure = plt.figure(num=1, figsize=(12, 12))
-        ax = figure.add_subplot(111, projection='3d')
+    def plot_trajectory_dataset_matplotlib(
+        self,
+        samples,
+        title='',
+        rotate_data_whose_y_up=False,
+        plot_all=False,
+        shuffle=False,
+        plot_xy_only=False,      # <-- thêm tham số mới
+        label_list=None,
+        label_font_size=20
+    ):
+        # Tạo figure và axes tuỳ theo chế độ 2D hay 3D
+        if plot_xy_only:
+            fig, ax = plt.subplots(figsize=(12, 12))   # 2D
+        else:
+            fig = plt.figure(num=1, figsize=(12, 12))
+            ax = fig.add_subplot(111, projection='3d')  # 3D
 
         if shuffle:
             random.shuffle(samples)
 
-        x_min = 1000
-        x_max = -1000
-        y_min = 1000
-        y_max = -1000
-        z_min = 1000
-        z_max = -1000
-        for i in range(len(samples)):
-            if i >= len(self.colors) - 1:
-                if not plot_all:
-                    break
-                color_current = self.colors[-1]
-            else:
-                color_current = self.colors[i]
+        # Khởi tạo biến min/max cho từng chiều (vẫn dùng chung)
+        x_min = y_min = z_min = float('inf')
+        x_max = y_max = z_max = float('-inf')
 
-            sample = np.array(samples[i])
+        for i, sample in enumerate(samples):
+            if i >= len(self.colors) - 1 and not plot_all:
+                break
+            color_current = self.colors[i] if i < len(self.colors) - 1 else self.colors[-1]
 
+            sample = np.array(sample)
+            # Chuyển trục nếu cần
             if rotate_data_whose_y_up:
-                # Change the order of the axis so that z is up and follow the right-hand rule
                 x_data = sample[:, 0]
                 y_data = -sample[:, 2]
                 z_data = sample[:, 1]
@@ -114,41 +122,52 @@ class Plotter:
                 y_data = sample[:, 1]
                 z_data = sample[:, 2]
 
-            ax.plot(x_data, y_data, z_data, 
-                    'o', color=color_current, alpha=0.5, label='Test ' + str(i + 1) + ' Sample Trajectory')
+            # Vẽ
+            if label_list is not None and i < len(label_list):
+                label = label_list[i]
+            else:
+                label = f'Test {i+1} Sample Trajectory'
+            if plot_xy_only:
+                ax.plot(x_data, y_data, 'o',
+                        color=color_current, alpha=0.5,
+                        label=label)
+                ax.text(x_data[-1], y_data[-1], 'end',
+                        color=color_current, fontsize=10)
+            else:
+                ax.plot(x_data, y_data, z_data, 'o',
+                        color=color_current, alpha=0.5,
+                        label=label)
+                ax.text(x_data[-1], y_data[-1], z_data[-1], 'end',
+                        color=color_current, fontsize=10)
 
-            # Add 'end' text at the last point
-            ax.text(x_data[-1], y_data[-1], z_data[-1], 'end', color=color_current, fontsize=10)
+            # Cập nhật min/max
+            x_min, x_max = min(x_min, x_data.min()), max(x_max, x_data.max())
+            y_min, y_max = min(y_min, y_data.min()), max(y_max, y_data.max())
+            z_min, z_max = min(z_min, z_data.min()), max(z_max, z_data.max())
 
-            x_min = min(x_min, x_data.min())
-            x_max = max(x_max, x_data.max())
-            y_min = min(y_min, y_data.min())
-            y_max = max(y_max, y_data.max())
-            z_min = min(z_min, z_data.min())
-            z_max = max(z_max, z_data.max())
-        
-        # Calculate ranges
-        x_range = x_max - x_min
-        y_range = y_max - y_min
-        z_range = z_max - z_min
-        max_range = max(x_range, y_range, z_range)
+        # Tính phạm vi và tâm
+        x_range, y_range, z_range = x_max-x_min, y_max-y_min, z_max-z_min
+        max_range = max(x_range, y_range, z_range) + 0.5
+        x_mid, y_mid, z_mid = (x_max+x_min)/2, (y_max+y_min)/2, (z_max+z_min)/2
 
-        # Calculate midpoints
-        x_mid = (x_max + x_min) / 2
-        y_mid = (y_max + y_min) / 2
-        z_mid = (z_max + z_min) / 2
+        # Set giới hạn trục
+        ax.set_xlim(x_mid - max_range/2, x_mid + max_range/2)
+        ax.set_ylim(y_mid - max_range/2, y_mid + max_range/2)
+        if not plot_xy_only:
+            ax.set_zlim(z_mid - max_range/2, z_mid + max_range/2)
 
-        # Set equal aspect ratio
-        ax.set_xlim([x_mid - max_range / 2, x_mid + max_range / 2])
-        ax.set_ylim([y_mid - max_range / 2, y_mid + max_range / 2])
-        ax.set_zlim([z_mid - max_range / 2, z_mid + max_range / 2])
-
+        # Gán nhãn
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
+        if not plot_xy_only:
+            ax.set_zlabel('Z')
+        ax.legend(fontsize=label_font_size)
+        
 
-        plt.legend()
-        plt.title('3D samples ' + title, fontsize=25)
+        # plt.legend()
+        # Điều chỉnh tiêu đề cho 2D hay 3D
+        kind = '2D' if plot_xy_only else '3D'
+        plt.title(f'{kind} samples {title}', fontsize=25)
         plt.show()
     
     def plot_trajectory_dataset_plotly(self, trajectories, title='', rotate_data_whose_y_up=False, save_plot=False):
@@ -240,7 +259,7 @@ class Plotter:
             )
         )
         # Hiển thị biểu đồ
-        fig.show()
+        fig.show(renderer="browser")
 
         if save_plot:
             # Lưu biểu đồ thành HTML
