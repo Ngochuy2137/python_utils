@@ -5,7 +5,11 @@ setup(
     name="python_utils",
     version="0.1",
     packages=find_packages(),
-    install_requires=[],  # Các thư viện cần thiết nếu có
+    install_requires=[
+        "numpy>=1.20",
+        "matplotlib>=3.5",
+        "plotly>=5.0",
+    ],
     author="Huynn",
     author_email="huy.nguyenngoc2137@gmail.com",
     description="Python utilities",
